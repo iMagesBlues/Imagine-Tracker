@@ -82,7 +82,7 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API DebugShowTexture()
 // --------------------------------------------------------------------------
 // Build And Load ImageTargets
 
-extern "C" int UNITY_INTERFACE_API BuildImageTargetDatabase(Color32* img, int width, int height, const char* imgName, char* data, int* size)
+extern "C" int UNITY_INTERFACE_API BuildImageTargetDatabase(Color32* img, int width, int height, const char* imgName)
 {
     cv::Mat imgMat(height, width, CV_8UC4, img);
     
@@ -95,13 +95,13 @@ extern "C" int UNITY_INTERFACE_API BuildImageTargetDatabase(Color32* img, int wi
     //create new ImageTarget
     ImageTarget imageTarget;
     imageTarget.BuildFromImage(scaledMat, imgName);
-    imageTarget.ExportDatabase(data, size);
+    imageTarget.ExportDatabase();
     
     return 0;
 }
-extern "C" int UNITY_INTERFACE_EXPORT InitImageTarget(char* data, int size){
+extern "C" int UNITY_INTERFACE_EXPORT InitImageTarget(const char* imgName){
 
-    imageTarget.ImportDatabase(data, size);
+    imageTarget.ImportDatabase(imgName);
     
     Debug::Log("imported imagetarget data");
     Debug::Log(imageTarget.descriptors.rows);

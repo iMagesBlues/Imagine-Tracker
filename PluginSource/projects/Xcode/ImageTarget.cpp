@@ -15,7 +15,7 @@
 int ImageTarget::BuildFromImage(const Mat& scaledImage, string imgName){
     bool result = true;
     
-    name = name;
+    name = imgName;
     image = scaledImage.clone();
     size = Size(image.cols, image.rows);
     GetGray(image, grayImg);
@@ -66,52 +66,65 @@ int ImageTarget::BuildFromImage(const Mat& scaledImage, string imgName){
     return 0;
 }
 
-void ImageTarget::ExportDatabase(char* data, int* size)
+void ImageTarget::ExportDatabase()
 {
-    int keypointSize = sizeof(keypoints);
-    int descriptorSize = sizeof(descriptors);
-    
-    *size = keypointSize + descriptorSize + sizeof(int) + sizeof(int);
-    
-    memcpy(data,                    &keypointSize,   sizeof(int));
-    memcpy(data + 4,                &keypoints,      sizeof(keypoints));
-    memcpy(data + keypointSize + 4, &descriptorSize, sizeof(int));
-    memcpy(data + keypointSize + 8, &descriptors,    sizeof(descriptors));
-    
-    Debug::Log("2 keypoints size", Color::Blue);
-    Debug::Log((int)*data);
-    
-    
-    Debug::Log("2 descriptors size", Color::Blue);
-    Debug::Log((int)*(data + keypointSize + 4));
+//    int keypointSize = sizeof(keypoints);
+//    int descriptorSize = sizeof(descriptors);
+//
+//    *size = keypointSize + descriptorSize + sizeof(int) + sizeof(int);
+//
+//    memcpy(data,                    &keypointSize,   sizeof(int));
+//    memcpy(data + 4,                &keypoints,      sizeof(keypoints));
+//    memcpy(data + keypointSize + 4, &descriptorSize, sizeof(int));
+//    memcpy(data + keypointSize + 8, &descriptors,    sizeof(descriptors));
+//
+//    Debug::Log("2 keypoints size", Color::Blue);
+//    Debug::Log((int)*data);
+//
+//
+//    Debug::Log("2 descriptors size", Color::Blue);
+//    Debug::Log((int)*(data + keypointSize + 4));
     
     //TODO: Add unity readable section to access keypoints and quality level
     
+    
+    cv::FileStorage file(name + ".xml", cv::FileStorage::WRITE);
+    cv::write(file, "keypoints", keypoints);
+    cv::write(file, "descriptors", descriptors);
+    
+    Debug::Log("file save complete");
+    file.release();
 }
 
-void ImageTarget::ImportDatabase(char *data, int size)
+void ImageTarget::ImportDatabase(string imgName)
 {
     //get keypoints from data dump
-    int keypointSize = (int)data[0];
-    vector<KeyPoint> *keypointsPtr = (vector<KeyPoint>*)malloc(keypointSize);
-    memcpy(keypointsPtr, data + 4, keypointSize);
-    keypoints = *keypointsPtr;
-
-    //get descriptor
-    int descriptorSize = (int)data[keypointSize + 4];
-    Mat* descriptorsPtr = (Mat*)malloc(descriptorSize);
-    memcpy(descriptorsPtr, data + keypointSize + 8, descriptorSize);
-    descriptors = *descriptorsPtr;
+//    int keypointSize = (int)data[0];
+//    vector<KeyPoint> *keypointsPtr = (vector<KeyPoint>*)malloc(keypointSize);
+//    memcpy(keypointsPtr, data + 4, keypointSize);
+//    keypoints = *keypointsPtr;
+//
+//    //get descriptor
+//    int descriptorSize = (int)data[keypointSize + 4];
+//    Mat* descriptorsPtr = (Mat*)malloc(descriptorSize);
+//    memcpy(descriptorsPtr, data + keypointSize + 8, descriptorSize);
+//    descriptors = *descriptorsPtr;
+    
+    name = imgName;
+    
+    cv::FileStorage file(name + ".xml", cv::FileStorage::READ);
+    cv::FileNode keypointsNode = file["keypoints"];
+    cv::read(keypointsNode, keypoints);
+    cv::FileNode descriptorsNode = file["descriptors"];
+    cv::read(descriptorsNode, descriptors);
+    file.release();
+    
     
     //check
-    Debug::Log((int)keypointSize, Color::Orange);
-    Debug::Log((int)sizeof(keypoints), Color::Orange);
+
     Debug::Log("keypoints size", Color::Blue);
     Debug::Log((int)keypoints.size(), Color::Orange);
-    
-    
-    Debug::Log((int)descriptorSize);
-    Debug::Log((int)sizeof(descriptors));
+
     Debug::Log("descriptor size", Color::Blue);
     Debug::Log((int)descriptors.rows);
     Debug::Log((int)descriptors.cols);

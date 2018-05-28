@@ -27,10 +27,10 @@ public class imagineARController : MonoBehaviour
 	private static extern IntPtr GetRenderEventFunc();
 
 	[DllImport("imagineARPlugin")]
-	private static extern int BuildImageTargetDatabase (Color32[] img, int width, int height, string imgName, IntPtr data, out int size);
+	private static extern int BuildImageTargetDatabase (Color32[] img, int width, int height, string imgName);
 
 	[DllImport("imagineARPlugin")]
-	private static extern int InitImageTarget (IntPtr data, int size);
+	private static extern int InitImageTarget (string imgName);
 
 	[DllImport("imagineARPlugin")]
 	private static extern void Train();
@@ -60,8 +60,8 @@ public class imagineARController : MonoBehaviour
 		SetWebcamTexture (tex.GetNativeTexturePtr(), tex.width, tex.height);
 
 		//Initialize Imagetarget
-		//Initialize();
-		//Train ();
+		Initialize();
+		Train ();
 
 		StartCoroutine("CallPluginAtEndOfFrames");
 
@@ -93,9 +93,7 @@ public class imagineARController : MonoBehaviour
 				image.GetPixels32 (), 
 				image.width, 
 				image.height, 
-				image.name, 
-				(IntPtr)d, 
-				out size
+				image.name 
 			);
 		}
 
@@ -117,9 +115,11 @@ public class imagineARController : MonoBehaviour
 	public unsafe void Initialize(){
 		byte[] data = database.bytes;
 
+		Debug.Log ("Init " + database.name);
+
 		//Pin Memory
 		fixed (byte* d = data) {
-			InitImageTarget ((IntPtr)d, data.Length);
+			InitImageTarget (database.name);
 		}
 	}
 

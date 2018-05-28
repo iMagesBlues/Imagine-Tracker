@@ -33,8 +33,8 @@ struct ImageTarget
     
     int BuildFromImage(const Mat& img, string imgName);
     void GetGray(const Mat& image, Mat& gray);
-    void ExportDatabase(char* data, int* size);
-    void ImportDatabase(char* data, int size);
+    void ExportDatabase();
+    void ImportDatabase(string imgName);
     
 };
 
