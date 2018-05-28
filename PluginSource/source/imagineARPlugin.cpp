@@ -10,6 +10,8 @@
 #include <glew.h>
 #include <opencv2/opencv.hpp>
 #include <DebugCPP.hpp>
+#include <ImageTarget.hpp>
+#include <Tracker.hpp>
 
 
 // --------------------------------------------------------------------------
@@ -21,6 +23,21 @@ static int   g_TextureHeight = 0;
 
 static cv::VideoCapture cap;
 static cv::Mat webcamImage, gray;
+
+//static vector<ImageTarget> imageTargets;
+//static vector<Tracker> trackers;
+
+static ImageTarget imageTarget;
+static Tracker tracker;
+
+struct Color32
+{
+    uchar r;
+    uchar g;
+    uchar b;
+    uchar a;
+};
+
 // ------------ WEBCAM FUNCTIONS ----------------
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API OpenWebcam(int* w, int* h)
 {
@@ -47,7 +64,7 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API CloseWebcam()
     return;
 }
 //--------------------------------------------------
-extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetTextureFromUnity(void* textureHandle, int w, int h)
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetWebcamTexture(void* textureHandle, int w, int h)
 {
 	g_TextureHandle = textureHandle;
 	g_TextureWidth = w;
@@ -59,7 +76,45 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetTextureFromUnity(v
 
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API DebugShowTexture()
 {
-    cv::imshow("Webcam Image", webcamImage);
+    cv::imshow("Gray Image", gray);
+}
+
+// --------------------------------------------------------------------------
+// Build And Load ImageTargets
+
+extern "C" int UNITY_INTERFACE_API BuildImageTargetDatabase(Color32* img, int width, int height, const char* imgName, char* data, int* size)
+{
+    cv::Mat imgMat(height, width, CV_8UC4, img);
+    
+    //scale image
+    cv::Mat scaledMat;
+    float maxWidth = 300;
+    float aspect = (float)width / height;
+    cv::resize(imgMat, scaledMat, Size(maxWidth, maxWidth / aspect));
+    
+    //create new ImageTarget
+    ImageTarget imageTarget;
+    imageTarget.BuildFromImage(scaledMat, imgName);
+    imageTarget.ExportDatabase(data, size);
+    
+    return 0;
+}
+extern "C" int UNITY_INTERFACE_EXPORT InitImageTarget(char* data, int size){
+
+    imageTarget.ImportDatabase(data, size);
+    
+    Debug::Log("imported imagetarget data");
+    Debug::Log(imageTarget.descriptors.rows);
+    Debug::Log(imageTarget.descriptors.cols);
+
+    return 0;
+}
+
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API Train()
+{
+    tracker.train(imageTarget);
+    Debug::Log("init tracker done");
+
 }
 
 // --------------------------------------------------------------------------
@@ -119,17 +174,14 @@ static void UNITY_INTERFACE_API OnGraphicsDeviceEvent(UnityGfxDeviceEventType ev
 	}
 }
 
-
-
 // --------------------------------------------------------------------------
 // OnRenderEvent
 // This will be called for GL.IssuePluginEvent script calls; eventID will
 // be the integer passed to IssuePluginEvent. In this example, we just ignore
 // that value.
 
-static void ModifyTexturePixels()
+static void RenderWebcamTexture()
 {
-    
     Debug::Log("Modify Texture Pixels");
     
     void* textureHandle = g_TextureHandle;
@@ -151,7 +203,6 @@ static void ModifyTexturePixels()
     
     cap >> webcamImage;
 
-    
     unsigned char* dst = (unsigned char*)textureDataPtr;
     for(int y = 0; y < webcamImage.rows; y++)
     {
@@ -170,36 +221,6 @@ static void ModifyTexturePixels()
         dst += textureRowPitch;
     }
     
-//    cap >> webcamImage;
-    
-//    GLuint gltex = (GLuint)(size_t)(textureDataPtr);
-//    glGenTextures(1, &gltex);
-//    glBindTexture(GL_TEXTURE_2D, gltex);
-//
-//    Debug::Log("Bind Texture");
-//
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//
-//    // Set texture clamping method
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-//
-//    Debug::Log("Texture Params");
-//
-//    glTexImage2D(   GL_TEXTURE_2D,     // Type of texture
-//                    0,                 // Pyramid level (for mip-mapping) - 0 is the top level
-//                    GL_RGBA,            // Internal colour format to convert to
-//                    webcamImage.cols,          // Image width  i.e. 640 for Kinect in standard mode
-//                    webcamImage.rows,          // Image height i.e. 480 for Kinect in standard mode
-//                    0,                 // Border width in pixels (can either be 1 or 0)
-//                    GL_BGR, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
-//                    GL_UNSIGNED_BYTE,  // Image data type
-//                    webcamImage.ptr());        // The actual image data itself
-//
-//    Debug::Log("Done glTexImage");
-    
-    //end conversion
    s_CurrentAPI->EndModifyTexture(textureHandle, width, height, textureRowPitch, textureDataPtr);
 }
 
@@ -212,7 +233,13 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 	if (s_CurrentAPI == NULL)
 		return;
     
-	ModifyTexturePixels();
+	RenderWebcamTexture();
+    
+    //track imagetarget
+    cv::resize(webcamImage, gray, Size(300,169));
+    cv::cvtColor(gray, gray, CV_BGR2GRAY);
+    //tracker.findPattern(gray);
+    //tracker.m_trackingInfo.draw2dContour(gray, CV_RGB(0,200,0));
 }
 
 
@@ -224,3 +251,12 @@ extern "C" UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRen
 	return OnRenderEvent;
 }
 
+// --------------------------------------------------------------------------
+// Plugin End
+
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API End()
+{
+    std::stringstream ss;
+    ss << "End imagineARPlugin";
+    Debug::Log(ss);
+}

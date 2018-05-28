@@ -1,10 +1,6 @@
 dependencies: \
-  /Users/imagesblues/Desktop/Projects/imagine-Realities/imagineARPlugin/PluginSource/source/imagineARPlugin.cpp \
-  /Users/imagesblues/Desktop/Projects/imagine-Realities/imagineARPlugin/PluginSource/source/PlatformBase.h \
-  /Users/imagesblues/Desktop/Projects/imagine-Realities/imagineARPlugin/PluginSource/source/RenderAPI.h \
-  /Users/imagesblues/Desktop/Projects/imagine-Realities/imagineARPlugin/PluginSource/source/Unity/IUnityGraphics.h \
-  /Users/imagesblues/Desktop/Projects/imagine-Realities/imagineARPlugin/PluginSource/source/Unity/IUnityInterface.h \
-  /Users/imagesblues/Desktop/Projects/imagine-Realities/imagineARPlugin/PluginSource/source/GLEW/glew.h \
+  /Users/imagesblues/Desktop/Projects/imagine-Realities/imagineARPlugin/PluginSource/projects/Xcode/ImageTarget.cpp \
+  /Users/imagesblues/Desktop/Projects/imagine-Realities/imagineARPlugin/PluginSource/projects/Xcode/ImageTarget.hpp \
   /usr/local/Cellar/opencv/3.4.1_5/include/opencv2/opencv.hpp \
   /usr/local/Cellar/opencv/3.4.1_5/include/opencv2/opencv_modules.hpp \
   /usr/local/Cellar/opencv/3.4.1_5/include/opencv2/core.hpp \
@@ -132,7 +128,4 @@ dependencies: \
   /usr/local/Cellar/opencv/3.4.1_5/include/opencv2/videostab/deblurring.hpp \
   /usr/local/Cellar/opencv/3.4.1_5/include/opencv2/videostab/wobble_suppression.hpp \
   /usr/local/Cellar/opencv/3.4.1_5/include/opencv2/videostab/ring_buffer.hpp \
-  /Users/imagesblues/Desktop/Projects/imagine-Realities/imagineARPlugin/PluginSource/projects/Xcode/DebugCPP.hpp \
-  /Users/imagesblues/Desktop/Projects/imagine-Realities/imagineARPlugin/PluginSource/projects/Xcode/ImageTarget.hpp \
-  /Users/imagesblues/Desktop/Projects/imagine-Realities/imagineARPlugin/PluginSource/projects/Xcode/Tracker.hpp \
-  /usr/local/Cellar/opencv/3.4.1_5/include/opencv2/features2d/features2d.hpp
+  /Users/imagesblues/Desktop/Projects/imagine-Realities/imagineARPlugin/PluginSource/projects/Xcode/DebugCPP.hpp

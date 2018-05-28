@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		2A4B55DD20B168D100FDEA38 /* DebugCPP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A4B55DC20B168D100FDEA38 /* DebugCPP.cpp */; };
+		2AD2F41920BBB0790055B207 /* ImageTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD2F41720BBB0790055B207 /* ImageTarget.cpp */; };
+		2AD2F41C20BBCC640055B207 /* Tracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD2F41A20BBCC630055B207 /* Tracker.cpp */; };
 		2B6899B81CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B01CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp */; };
 		2B6899B91CF8396700C4BA4F /* RenderAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B11CF8396700C4BA4F /* RenderAPI.cpp */; };
 		2B6899BA1CF8396700C4BA4F /* imagineARPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B31CF8396700C4BA4F /* imagineARPlugin.cpp */; };
@@ -36,6 +38,10 @@
 		0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
 		2A4B55DB20B168D100FDEA38 /* DebugCPP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DebugCPP.hpp; sourceTree = "<group>"; };
 		2A4B55DC20B168D100FDEA38 /* DebugCPP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DebugCPP.cpp; sourceTree = "<group>"; };
+		2AD2F41720BBB0790055B207 /* ImageTarget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageTarget.cpp; sourceTree = "<group>"; };
+		2AD2F41820BBB0790055B207 /* ImageTarget.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ImageTarget.hpp; sourceTree = "<group>"; };
+		2AD2F41A20BBCC630055B207 /* Tracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tracker.cpp; sourceTree = "<group>"; };
+		2AD2F41B20BBCC640055B207 /* Tracker.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Tracker.hpp; sourceTree = "<group>"; };
 		2B6899AB1CF8396700C4BA4F /* PlatformBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlatformBase.h; path = ../../source/PlatformBase.h; sourceTree = "<group>"; };
 		2B6899AD1CF8396700C4BA4F /* RenderAPI_D3D11.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderAPI_D3D11.cpp; path = ../../source/RenderAPI_D3D11.cpp; sourceTree = "<group>"; };
 		2B6899AE1CF8396700C4BA4F /* RenderAPI_D3D12.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderAPI_D3D12.cpp; path = ../../source/RenderAPI_D3D12.cpp; sourceTree = "<group>"; };
@@ -114,6 +120,10 @@
 				2B6899B01CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp */,
 				2B6899B11CF8396700C4BA4F /* RenderAPI.cpp */,
 				2B6899B21CF8396700C4BA4F /* RenderAPI.h */,
+				2AD2F41A20BBCC630055B207 /* Tracker.cpp */,
+				2AD2F41B20BBCC640055B207 /* Tracker.hpp */,
+				2AD2F41720BBB0790055B207 /* ImageTarget.cpp */,
+				2AD2F41820BBB0790055B207 /* ImageTarget.hpp */,
 				2B6899B31CF8396700C4BA4F /* imagineARPlugin.cpp */,
 			);
 			name = Source;
@@ -217,7 +227,9 @@
 			files = (
 				2B6899BA1CF8396700C4BA4F /* imagineARPlugin.cpp in Sources */,
 				2B6899B81CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp in Sources */,
+				2AD2F41920BBB0790055B207 /* ImageTarget.cpp in Sources */,
 				2B6899B91CF8396700C4BA4F /* RenderAPI.cpp in Sources */,
+				2AD2F41C20BBCC640055B207 /* Tracker.cpp in Sources */,
 				2A4B55DD20B168D100FDEA38 /* DebugCPP.cpp in Sources */,
 				2B6899CB1CF8409A00C4BA4F /* RenderAPI_Metal.mm in Sources */,
 				2B6899C11CF8399700C4BA4F /* glew.c in Sources */,
