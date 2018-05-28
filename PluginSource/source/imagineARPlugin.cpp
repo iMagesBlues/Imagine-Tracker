@@ -238,7 +238,7 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
     //track imagetarget
     cv::resize(webcamImage, gray, Size(300,169));
     cv::cvtColor(gray, gray, CV_BGR2GRAY);
-    //tracker.findPattern(gray);
+    tracker.findPattern(gray);
     //tracker.m_trackingInfo.draw2dContour(gray, CV_RGB(0,200,0));
 }
 

@@ -26,7 +26,7 @@ Tracker::Tracker(cv::Ptr<cv::FeatureDetector> detector,
 }
 
 
-void Tracker::train(const ImageTarget imageTarget)
+void Tracker::train(const ImageTarget& imageTarget)
 {
     // Store the pattern object
     m_imageTarget = imageTarget;

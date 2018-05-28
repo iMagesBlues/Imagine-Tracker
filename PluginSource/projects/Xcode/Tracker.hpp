@@ -31,7 +31,7 @@ public:
     /**
     * 
     */
-    void train(const ImageTarget imageTarget);
+    void train(const ImageTarget& imageTarget);
     
     bool findPattern(const cv::Mat& image);
 
