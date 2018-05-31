@@ -44,6 +44,7 @@ public:
     TrackingInfo m_trackingInfo;
     std::vector<cv::KeyPoint> m_queryKeypoints;
     std::vector<cv::DMatch>   m_matches;
+    std::vector<cv::DMatch>   last_matches;
     cv::Mat                   m_warpedImg;
 
 
@@ -52,7 +53,7 @@ protected:
     bool extractFeatures(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) const;
 
     void getMatches(const cv::Mat& queryDescriptors, std::vector<cv::DMatch>& matches);
-
+    
     static bool refineMatchesWithHomography(
         const std::vector<cv::KeyPoint>& queryKeypoints, 
         const std::vector<cv::KeyPoint>& trainKeypoints, 

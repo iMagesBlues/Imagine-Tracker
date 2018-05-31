@@ -21,7 +21,7 @@ Tracker::Tracker(cv::Ptr<cv::FeatureDetector> detector,
     , m_matcher(matcher)
     , enableRatioTest(ratioTest)
     , enableHomographyRefinement(true)
-    , homographyReprojectionThreshold(20)
+    , homographyReprojectionThreshold(15)
 {
 }
 
@@ -53,10 +53,6 @@ bool Tracker::findPattern(const cv::Mat& image)
     
     // Extract feature points from input gray image
     extractFeatures(m_grayImg, m_queryKeypoints, m_queryDescriptors);
-    
-//    for(int i = 0; i < m_queryKeypoints.size(); i++){
-//        cv::circle(m_grayImg, m_queryKeypoints.at(i).pt, 3, CV_RGB(255, 255, 0));
-//    }
     
     // Get matches with current pattern
     getMatches(m_queryDescriptors, m_matches);
@@ -166,6 +162,8 @@ bool Tracker::extractFeatures(const cv::Mat& image, std::vector<cv::KeyPoint>& k
     return true;
 }
 
+
+
 void Tracker::getMatches(const cv::Mat& queryDescriptors, std::vector<cv::DMatch>& matches)
 {
     matches.clear();
@@ -202,6 +200,7 @@ void Tracker::getMatches(const cv::Mat& queryDescriptors, std::vector<cv::DMatch
     }
 }
 
+
 bool Tracker::refineMatchesWithHomography
     (
     const std::vector<cv::KeyPoint>& queryKeypoints,
@@ -211,7 +210,7 @@ bool Tracker::refineMatchesWithHomography
     cv::Mat& homography
     )
 {
-    const int minNumberMatchesAllowed = 4;
+    const int minNumberMatchesAllowed = 8;
 
     if (matches.size() < minNumberMatchesAllowed)
         return false;
@@ -233,8 +232,8 @@ bool Tracker::refineMatchesWithHomography
     std::vector<unsigned char> inliersMask(srcPoints.size());
     homography = cv::findHomography(srcPoints, 
                                     dstPoints, 
-                                    CV_FM_RANSAC, 
-                                    reprojectionThreshold, 
+                                    CV_FM_RANSAC,
+                                    reprojectionThreshold,
                                     inliersMask);
 
     std::vector<cv::DMatch> inliers;
