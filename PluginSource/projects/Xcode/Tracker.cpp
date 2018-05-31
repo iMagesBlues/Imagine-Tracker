@@ -97,17 +97,60 @@ bool Tracker::findPattern(const cv::Mat& image)
             
             if(!m_refinedHomography.empty())
             {
+                
+                //use second warp
+                
+                Mat m_warpedImg2, m_refinedHomography2;
+                // Warp image using found homography
+                cv::warpPerspective(m_warpedImg, m_warpedImg2, m_refinedHomography, m_imageTarget.size, cv::WARP_INVERSE_MAP | cv::INTER_CUBIC);
+                
+                // Get refined matches:
+                std::vector<cv::KeyPoint> warpedKeypoints2;
+                std::vector<cv::DMatch> refinedMatches2;
+                
+                // Detect features on warped image
+                extractFeatures(m_warpedImg2, warpedKeypoints2, m_queryDescriptors);
+                
+                // Match with pattern
+                getMatches(m_queryDescriptors, refinedMatches2);
+                
+                // Estimate new refinement homography
+                homographyFound = refineMatchesWithHomography(
+                                                              warpedKeypoints2,
+                                                              m_imageTarget.keypoints,
+                                                              homographyReprojectionThreshold,
+                                                              refinedMatches2,
+                                                              m_refinedHomography2);
+                if(!m_refinedHomography2.empty())
+                {
+                    // Get a result homography as result of matrix product of refined and rough homographies:
+                    m_trackingInfo.homography = m_roughHomography * m_refinedHomography * m_refinedHomography2;
+                    
+                    stringstream ss;
+                    ss << "homography second refinement successful " << std::to_string(refinedMatches2.size()) << endl;
+                    Debug::Log(ss);
+                    cout << ss.str();
+                    
+                    
+                    // Transform contour with precise homography
+                    cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, m_trackingInfo.homography);
+                }
+                else
+                {
+                
                 // Get a result homography as result of matrix product of refined and rough homographies:
                 m_trackingInfo.homography = m_roughHomography * m_refinedHomography;
-
+                m_warpedImg = m_warpedImg2;
+                    
                 stringstream ss;
-                ss << "homography refinement successful " << std::to_string(m_matches.size()) << endl;
+                ss << "homography refinement successful " << std::to_string(refinedMatches.size()) << endl;
                 Debug::Log(ss);
                 cout << ss.str();
              
 
                 // Transform contour with precise homography
                 cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, m_trackingInfo.homography);
+                }
             }
             else
             {
@@ -151,6 +194,7 @@ bool Tracker::extractFeatures(const cv::Mat& image, std::vector<cv::KeyPoint>& k
     assert(!image.empty());
     assert(image.channels() == 1);
 
+    //TODO:use detect and compute with mask to eliminate keypoints outside
     m_detector->detect(image, keypoints);
     if (keypoints.empty())
         return false;
@@ -210,7 +254,7 @@ bool Tracker::refineMatchesWithHomography
     cv::Mat& homography
     )
 {
-    const int minNumberMatchesAllowed = 8;
+    const int minNumberMatchesAllowed = 4;
 
     if (matches.size() < minNumberMatchesAllowed)
         return false;
