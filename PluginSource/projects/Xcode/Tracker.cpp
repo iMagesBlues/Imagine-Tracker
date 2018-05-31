@@ -10,7 +10,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cassert>
-#include <DebugCPP.hpp>
+#include "DebugCPP.hpp"
 
 Tracker::Tracker(cv::Ptr<cv::FeatureDetector> detector,
     cv::Ptr<cv::DescriptorExtractor> extractor, 
@@ -21,7 +21,7 @@ Tracker::Tracker(cv::Ptr<cv::FeatureDetector> detector,
     , m_matcher(matcher)
     , enableRatioTest(ratioTest)
     , enableHomographyRefinement(true)
-    , homographyReprojectionThreshold(3)
+    , homographyReprojectionThreshold(20)
 {
 }
 
@@ -49,23 +49,19 @@ void Tracker::train(const ImageTarget& imageTarget)
 
 bool Tracker::findPattern(const cv::Mat& image)
 {
-    TrackingInfo& info = m_trackingInfo;
-    
     m_grayImg = image;
     
     // Extract feature points from input gray image
     extractFeatures(m_grayImg, m_queryKeypoints, m_queryDescriptors);
     
-    for(int i = 0; i < m_queryKeypoints.size(); i++){
-        cv::circle(m_grayImg, m_queryKeypoints.at(i).pt, 3, CV_RGB(255, 255, 0));
-    }
-    
-    return true;
+//    for(int i = 0; i < m_queryKeypoints.size(); i++){
+//        cv::circle(m_grayImg, m_queryKeypoints.at(i).pt, 3, CV_RGB(255, 255, 0));
+//    }
     
     // Get matches with current pattern
     getMatches(m_queryDescriptors, m_matches);
-
-
+    
+    
     // Find homography transformation and detect good matches
     bool homographyFound = refineMatchesWithHomography(
         m_queryKeypoints, 
@@ -73,6 +69,7 @@ bool Tracker::findPattern(const cv::Mat& image)
         homographyReprojectionThreshold, 
         m_matches, 
         m_roughHomography);
+    
 
     if (homographyFound)
     {
@@ -100,21 +97,53 @@ bool Tracker::findPattern(const cv::Mat& image)
                 homographyReprojectionThreshold, 
                 refinedMatches, 
                 m_refinedHomography);
+            
+            
+            if(!m_refinedHomography.empty())
+            {
+                // Get a result homography as result of matrix product of refined and rough homographies:
+                m_trackingInfo.homography = m_roughHomography * m_refinedHomography;
 
-            // Get a result homography as result of matrix product of refined and rough homographies:
-            info.homography = m_roughHomography * m_refinedHomography;
+                stringstream ss;
+                ss << "homography refinement successful " << std::to_string(m_matches.size()) << endl;
+                Debug::Log(ss);
+                cout << ss.str();
+             
 
-
-            // Transform contour with precise homography
-            cv::perspectiveTransform(m_imageTarget.points2d, info.points2d, info.homography);
+                // Transform contour with precise homography
+                cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, m_trackingInfo.homography);
+            }
+            else
+            {
+                stringstream ss;
+                ss << "homography refinement failed " << std::to_string(m_matches.size()) << endl;
+                Debug::Log(ss);
+                cout << ss.str();
+                
+                m_trackingInfo.homography = m_roughHomography;
+                // Transform contour with precise homography
+                cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, m_trackingInfo.homography);
+            }
         }
         else
         {
-            info.homography = m_roughHomography;
+            m_trackingInfo.homography = m_roughHomography;
 
             // Transform contour with rough homography
-            cv::perspectiveTransform(m_imageTarget.points2d, info.points2d, m_roughHomography);
+            cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, m_roughHomography);
+            
+            stringstream ss;
+            ss << "homography found " << std::to_string(m_matches.size()) << endl;
+            Debug::Log(ss);
+            cout << ss.str();
         }        
+    }
+    else
+    {
+        stringstream ss;
+        ss << "homography not found " << std::to_string(m_matches.size()) << endl;
+        Debug::Log(ss);
+        cout << ss.str();
     }
 
     return homographyFound;
@@ -140,6 +169,7 @@ bool Tracker::extractFeatures(const cv::Mat& image, std::vector<cv::KeyPoint>& k
 void Tracker::getMatches(const cv::Mat& queryDescriptors, std::vector<cv::DMatch>& matches)
 {
     matches.clear();
+    m_knnMatches.clear();
 
     if (enableRatioTest)
     {
@@ -163,6 +193,7 @@ void Tracker::getMatches(const cv::Mat& queryDescriptors, std::vector<cv::DMatch
                 matches.push_back(bestMatch);
             }
         }
+        
     }
     else
     {
@@ -180,9 +211,12 @@ bool Tracker::refineMatchesWithHomography
     cv::Mat& homography
     )
 {
-    const int minNumberMatchesAllowed = 8;
+    const int minNumberMatchesAllowed = 4;
 
     if (matches.size() < minNumberMatchesAllowed)
+        return false;
+    
+    if(queryKeypoints.size() <= 0)
         return false;
 
     // Prepare data for cv::findHomography

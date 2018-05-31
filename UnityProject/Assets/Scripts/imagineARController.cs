@@ -74,7 +74,7 @@ public class imagineARController : MonoBehaviour
 			yield return new WaitForEndOfFrame();
 
 			GL.IssuePluginEvent (GetRenderEventFunc (), 1);
-			DebugShowTexture ();
+			//DebugShowTexture ();
 		}
 	}
 	void OnDisable(){

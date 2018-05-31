@@ -10,6 +10,16 @@
 		2A4B55DD20B168D100FDEA38 /* DebugCPP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A4B55DC20B168D100FDEA38 /* DebugCPP.cpp */; };
 		2AD2F41920BBB0790055B207 /* ImageTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD2F41720BBB0790055B207 /* ImageTarget.cpp */; };
 		2AD2F41C20BBCC640055B207 /* Tracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD2F41A20BBCC630055B207 /* Tracker.cpp */; };
+		2AD4A85920BFC1080050E4A0 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD4A85820BFC1080050E4A0 /* main.cpp */; };
+		2AD4A85D20BFE3790050E4A0 /* ImageTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD2F41720BBB0790055B207 /* ImageTarget.cpp */; };
+		2AD4A85E20BFE37D0050E4A0 /* glew.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899BD1CF8399700C4BA4F /* glew.c */; };
+		2AD4A85F20BFE3820050E4A0 /* Tracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD2F41A20BBCC630055B207 /* Tracker.cpp */; };
+		2AD4A86020BFE39E0050E4A0 /* DebugCPP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A4B55DC20B168D100FDEA38 /* DebugCPP.cpp */; };
+		2AD4A86320BFE41B0050E4A0 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AD4A86220BFE41B0050E4A0 /* CoreFoundation.framework */; };
+		2AD4A86520BFE4E50050E4A0 /* RenderAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B11CF8396700C4BA4F /* RenderAPI.cpp */; };
+		2AD4A86620BFE4F00050E4A0 /* RenderAPI_OpenGLCoreES.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B01CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp */; };
+		2AD4A86720BFE4F60050E4A0 /* RenderAPI_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899CA1CF8409A00C4BA4F /* RenderAPI_Metal.mm */; };
+		2AD4A86820BFE7A90050E4A0 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BC2A8D4144C433D00D5EF79 /* OpenGL.framework */; };
 		2B6899B81CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B01CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp */; };
 		2B6899B91CF8396700C4BA4F /* RenderAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B11CF8396700C4BA4F /* RenderAPI.cpp */; };
 		2B6899BA1CF8396700C4BA4F /* imagineARPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B31CF8396700C4BA4F /* imagineARPlugin.cpp */; };
@@ -21,6 +31,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		2AD4A85420BFC1080050E4A0 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		2B6899C81CF83D6200C4BA4F /* Copy Bundle into Unity project */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -42,6 +61,9 @@
 		2AD2F41820BBB0790055B207 /* ImageTarget.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ImageTarget.hpp; sourceTree = "<group>"; };
 		2AD2F41A20BBCC630055B207 /* Tracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tracker.cpp; sourceTree = "<group>"; };
 		2AD2F41B20BBCC640055B207 /* Tracker.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Tracker.hpp; sourceTree = "<group>"; };
+		2AD4A85620BFC1080050E4A0 /* imagineAR Plugin Test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "imagineAR Plugin Test"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2AD4A85820BFC1080050E4A0 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		2AD4A86220BFE41B0050E4A0 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		2B6899AB1CF8396700C4BA4F /* PlatformBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlatformBase.h; path = ../../source/PlatformBase.h; sourceTree = "<group>"; };
 		2B6899AD1CF8396700C4BA4F /* RenderAPI_D3D11.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderAPI_D3D11.cpp; path = ../../source/RenderAPI_D3D11.cpp; sourceTree = "<group>"; };
 		2B6899AE1CF8396700C4BA4F /* RenderAPI_D3D12.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderAPI_D3D12.cpp; path = ../../source/RenderAPI_D3D12.cpp; sourceTree = "<group>"; };
@@ -66,6 +88,15 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		2AD4A85320BFC1080050E4A0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2AD4A86820BFE7A90050E4A0 /* OpenGL.framework in Frameworks */,
+				2AD4A86320BFE41B0050E4A0 /* CoreFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D576313048677EA00EA77CD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -84,7 +115,9 @@
 				08FB77AFFE84173DC02AAC07 /* Source */,
 				089C167CFE841241C02AAC07 /* Resources */,
 				089C1671FE841209C02AAC07 /* External Frameworks and Libraries */,
+				2AD4A85720BFC1080050E4A0 /* imagineAR Plugin Test */,
 				19C28FB6FE9D52B211CA2CBB /* Products */,
+				2AD4A86120BFE41B0050E4A0 /* Frameworks */,
 			);
 			name = RenderingPlugin;
 			sourceTree = "<group>";
@@ -133,8 +166,25 @@
 			isa = PBXGroup;
 			children = (
 				8D576316048677EA00EA77CD /* imagineARPlugin.bundle */,
+				2AD4A85620BFC1080050E4A0 /* imagineAR Plugin Test */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		2AD4A85720BFC1080050E4A0 /* imagineAR Plugin Test */ = {
+			isa = PBXGroup;
+			children = (
+				2AD4A85820BFC1080050E4A0 /* main.cpp */,
+			);
+			path = "imagineAR Plugin Test";
+			sourceTree = "<group>";
+		};
+		2AD4A86120BFE41B0050E4A0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2AD4A86220BFE41B0050E4A0 /* CoreFoundation.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		2B6899BB1CF8397C00C4BA4F /* GLEW */ = {
@@ -164,6 +214,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		2AD4A85520BFC1080050E4A0 /* imagineAR Plugin Test */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2AD4A85A20BFC1080050E4A0 /* Build configuration list for PBXNativeTarget "imagineAR Plugin Test" */;
+			buildPhases = (
+				2AD4A85220BFC1080050E4A0 /* Sources */,
+				2AD4A85320BFC1080050E4A0 /* Frameworks */,
+				2AD4A85420BFC1080050E4A0 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "imagineAR Plugin Test";
+			productName = "imagineAR Plugin Test";
+			productReference = 2AD4A85620BFC1080050E4A0 /* imagineAR Plugin Test */;
+			productType = "com.apple.product-type.tool";
+		};
 		8D57630D048677EA00EA77CD /* RenderingPlugin */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1DEB911A08733D790010E9CD /* Build configuration list for PBXNativeTarget "RenderingPlugin" */;
@@ -190,6 +257,12 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0730;
+				TargetAttributes = {
+					2AD4A85520BFC1080050E4A0 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+				};
 			};
 			buildConfigurationList = 1DEB911E08733D790010E9CD /* Build configuration list for PBXProject "imagineAR" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -206,6 +279,7 @@
 			projectRoot = "";
 			targets = (
 				8D57630D048677EA00EA77CD /* RenderingPlugin */,
+				2AD4A85520BFC1080050E4A0 /* imagineAR Plugin Test */,
 			);
 		};
 /* End PBXProject section */
@@ -221,6 +295,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		2AD4A85220BFC1080050E4A0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2AD4A86720BFE4F60050E4A0 /* RenderAPI_Metal.mm in Sources */,
+				2AD4A86620BFE4F00050E4A0 /* RenderAPI_OpenGLCoreES.cpp in Sources */,
+				2AD4A86520BFE4E50050E4A0 /* RenderAPI.cpp in Sources */,
+				2AD4A86020BFE39E0050E4A0 /* DebugCPP.cpp in Sources */,
+				2AD4A85F20BFE3820050E4A0 /* Tracker.cpp in Sources */,
+				2AD4A85E20BFE37D0050E4A0 /* glew.c in Sources */,
+				2AD4A85D20BFE3790050E4A0 /* ImageTarget.cpp in Sources */,
+				2AD4A85920BFC1080050E4A0 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D576311048677EA00EA77CD /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -349,6 +438,169 @@
 			};
 			name = Release;
 		};
+		2AD4A85B20BFC1080050E4A0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					../,
+					/usr/local/Cellar/opencv/3.4.1_5/include,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					../,
+					/usr/local/Cellar/opencv/3.4.1_5/lib,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				OTHER_LDFLAGS = (
+					"-I/usr/local/Cellar/opencv/3.4.1_5/include/opencv",
+					"-I/usr/local/Cellar/opencv/3.4.1_5/include",
+					"-L/usr/local/Cellar/opencv/3.4.1_5/lib",
+					"-lopencv_stitching",
+					"-lopencv_superres",
+					"-lopencv_videostab",
+					"-lopencv_aruco",
+					"-lopencv_bgsegm",
+					"-lopencv_bioinspired",
+					"-lopencv_ccalib",
+					"-lopencv_dnn_objdetect",
+					"-lopencv_dpm",
+					"-lopencv_face",
+					"-lopencv_photo",
+					"-lopencv_fuzzy",
+					"-lopencv_hfs",
+					"-lopencv_img_hash",
+					"-lopencv_line_descriptor",
+					"-lopencv_optflow",
+					"-lopencv_reg",
+					"-lopencv_rgbd",
+					"-lopencv_saliency",
+					"-lopencv_stereo",
+					"-lopencv_structured_light",
+					"-lopencv_phase_unwrapping",
+					"-lopencv_surface_matching",
+					"-lopencv_tracking",
+					"-lopencv_datasets",
+					"-lopencv_dnn",
+					"-lopencv_plot",
+					"-lopencv_xfeatures2d",
+					"-lopencv_shape",
+					"-lopencv_video",
+					"-lopencv_ml",
+					"-lopencv_ximgproc",
+					"-lopencv_calib3d",
+					"-lopencv_features2d",
+					"-lopencv_highgui",
+					"-lopencv_videoio",
+					"-lopencv_flann",
+					"-lopencv_xobjdetect",
+					"-lopencv_imgcodecs",
+					"-lopencv_objdetect",
+					"-lopencv_xphoto",
+					"-lopencv_imgproc",
+					"-lopencv_core",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "i386 x86_64";
+			};
+			name = Debug;
+		};
+		2AD4A85C20BFC1080050E4A0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = ../;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "i386 x86_64";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -366,6 +618,15 @@
 			buildConfigurations = (
 				1DEB911F08733D790010E9CD /* Debug */,
 				1DEB912008733D790010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2AD4A85A20BFC1080050E4A0 /* Build configuration list for PBXNativeTarget "imagineAR Plugin Test" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2AD4A85B20BFC1080050E4A0 /* Debug */,
+				2AD4A85C20BFC1080050E4A0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -25,7 +25,8 @@ public:
          cv::Ptr<cv::FeatureDetector>     detector  = cv::ORB::create(1000),
          cv::Ptr<cv::DescriptorExtractor> extractor = cv::ORB::create(1000),
          cv::Ptr<cv::DescriptorMatcher>   matcher   = cv::DescriptorMatcher::create(cv::BFMatcher::BRUTEFORCE_HAMMING),
-         bool enableRatioTest                       = false
+         //cv::Ptr<cv::DescriptorMatcher>   matcher   = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED),
+         bool enableRatioTest                       = true
         );
 
     /**
@@ -39,7 +40,12 @@ public:
     bool enableHomographyRefinement;
     float homographyReprojectionThreshold;
     
+    //exposed for debugging
     TrackingInfo m_trackingInfo;
+    std::vector<cv::KeyPoint> m_queryKeypoints;
+    std::vector<cv::DMatch>   m_matches;
+    cv::Mat                   m_warpedImg;
+
 
 protected:
 
@@ -55,13 +61,10 @@ protected:
         cv::Mat& homography);
 
 private:
-    std::vector<cv::KeyPoint> m_queryKeypoints;
     cv::Mat                   m_queryDescriptors;
-    std::vector<cv::DMatch>   m_matches;
     std::vector< std::vector<cv::DMatch> > m_knnMatches;
 
     cv::Mat                   m_grayImg;
-    cv::Mat                   m_warpedImg;
     cv::Mat                   m_roughHomography;
     cv::Mat                   m_refinedHomography;
 

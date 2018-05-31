@@ -68,27 +68,9 @@ int ImageTarget::BuildFromImage(const Mat& scaledImage, string imgName){
 
 void ImageTarget::ExportDatabase()
 {
-//    int keypointSize = sizeof(keypoints);
-//    int descriptorSize = sizeof(descriptors);
-//
-//    *size = keypointSize + descriptorSize + sizeof(int) + sizeof(int);
-//
-//    memcpy(data,                    &keypointSize,   sizeof(int));
-//    memcpy(data + 4,                &keypoints,      sizeof(keypoints));
-//    memcpy(data + keypointSize + 4, &descriptorSize, sizeof(int));
-//    memcpy(data + keypointSize + 8, &descriptors,    sizeof(descriptors));
-//
-//    Debug::Log("2 keypoints size", Color::Blue);
-//    Debug::Log((int)*data);
-//
-//
-//    Debug::Log("2 descriptors size", Color::Blue);
-//    Debug::Log((int)*(data + keypointSize + 4));
-    
-    //TODO: Add unity readable section to access keypoints and quality level
-    
     
     cv::FileStorage file(name + ".xml", cv::FileStorage::WRITE);
+    cv::write(file, "size", size);
     cv::write(file, "keypoints", keypoints);
     cv::write(file, "descriptors", descriptors);
     
@@ -98,26 +80,41 @@ void ImageTarget::ExportDatabase()
 
 void ImageTarget::ImportDatabase(string imgName)
 {
-    //get keypoints from data dump
-//    int keypointSize = (int)data[0];
-//    vector<KeyPoint> *keypointsPtr = (vector<KeyPoint>*)malloc(keypointSize);
-//    memcpy(keypointsPtr, data + 4, keypointSize);
-//    keypoints = *keypointsPtr;
-//
-//    //get descriptor
-//    int descriptorSize = (int)data[keypointSize + 4];
-//    Mat* descriptorsPtr = (Mat*)malloc(descriptorSize);
-//    memcpy(descriptorsPtr, data + keypointSize + 8, descriptorSize);
-//    descriptors = *descriptorsPtr;
     
     name = imgName;
     
     cv::FileStorage file(name + ".xml", cv::FileStorage::READ);
+
+    cv::FileNode sizeNode = file["size"];
+    cv::read(sizeNode, size, Size(0,0));
+    
     cv::FileNode keypointsNode = file["keypoints"];
     cv::read(keypointsNode, keypoints);
     cv::FileNode descriptorsNode = file["descriptors"];
     cv::read(descriptorsNode, descriptors);
     file.release();
+    
+    points2d.resize(4);
+    points3d.resize(4);
+    
+    // Image dimensions
+    const float w = size.width;
+    const float h = size.height;
+    
+    // Normalized dimensions:
+    const float maxSize = std::max(w,h);
+    const float unitW = w / maxSize;
+    const float unitH = h / maxSize;
+    
+    points2d[0] = cv::Point2f(0,0);
+    points2d[1] = cv::Point2f(w,0);
+    points2d[2] = cv::Point2f(w,h);
+    points2d[3] = cv::Point2f(0,h);
+    
+    points3d[0] = cv::Point3f(-unitW, -unitH, 0);
+    points3d[1] = cv::Point3f( unitW, -unitH, 0);
+    points3d[2] = cv::Point3f( unitW,  unitH, 0);
+    points3d[3] = cv::Point3f(-unitW,  unitH, 0);
     
     
     //check
@@ -128,6 +125,7 @@ void ImageTarget::ImportDatabase(string imgName)
     Debug::Log("descriptor size", Color::Blue);
     Debug::Log((int)descriptors.rows);
     Debug::Log((int)descriptors.cols);
+    
 }
 
 void ImageTarget::GetGray(const cv::Mat& image, cv::Mat& gray)
