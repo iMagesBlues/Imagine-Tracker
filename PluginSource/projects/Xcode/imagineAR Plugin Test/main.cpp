@@ -60,10 +60,13 @@ int main(int argc, const char * argv[]) {
         cap >> frame;
         cv::resize(frame, small, Size(300,169));
         cv::cvtColor(small, gray, CV_BGR2GRAY);
+        
+        //cv::equalizeHist( gray, gray );
 
-        tracker.findPattern(gray);
+        bool found = tracker.findPattern(gray);
 
-        tracker.m_trackingInfo.draw2dContour(gray, Scalar(255,255,0));
+        if(found)
+            tracker.m_trackingInfo.draw2dContour(gray, Scalar(255,255,0));
         
         //cv::drawMatches(gray, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints, tracker.m_matches, debugMatches, DrawMatchesFlags::DRAW_OVER_OUTIMG);
         

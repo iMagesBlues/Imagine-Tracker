@@ -254,7 +254,7 @@ bool Tracker::refineMatchesWithHomography
     cv::Mat& homography
     )
 {
-    const int minNumberMatchesAllowed = 4;
+    const int minNumberMatchesAllowed = 12;
 
     if (matches.size() < minNumberMatchesAllowed)
         return false;
