@@ -11,6 +11,8 @@
 #include "ImageTarget.hpp"
 #include "glew.h"
 #include "Tracker.hpp"
+#include "GeometryTypes.hpp"
+#include "CameraCalibration.hpp"
 
 void LoadImageToDatabase()
 {
@@ -27,10 +29,30 @@ void LoadImageToDatabase()
     imagetarget.ExportDatabase();
 }
 
+void ShowAxes(CameraCalibration calib, Transformation tMat, Mat& img)
+{
+    std::vector<cv::Point3d> pts;
+    pts.push_back(Point3d(0,0,0));
+    pts.push_back(Point3d(0.5,0,0));
+    pts.push_back(Point3d(0,0.5,0));
+    pts.push_back(Point3d(0,0,0.5));
+    
+    std::vector<cv::Point2d> newpts;
+
+    cv::projectPoints(pts, tMat.Rvec, tMat.Tvec, calib.getIntrinsic(), calib.getDistorsion(), newpts);
+    
+    cv::line(img, newpts.at(0), newpts.at(1), Scalar(0,0,255),2);
+    cv::line(img, newpts.at(0), newpts.at(2), Scalar(0,255,0),2);
+    cv::line(img, newpts.at(0), newpts.at(3), Scalar(255,0,0),2);
+
+}
+
 int main(int argc, const char * argv[]) {
     
 
     //LoadImageToDatabase();
+    
+    
         
     ImageTarget imageTarget;
     imageTarget.ImportDatabase("pandatest");
@@ -53,6 +75,10 @@ int main(int argc, const char * argv[]) {
     int minW = 300;
     int minH = (float)(trainImg.rows * minW) / trainImg.cols;
     cv::resize(trainImg, trainImg, Size(minW, minH));
+    
+    Mat webcamImage;
+    cap >> webcamImage;
+    CameraCalibration calib(webcamImage.cols, webcamImage.cols, webcamImage.cols / 2, webcamImage.rows / 2);
 
     for(;;)
     {
@@ -73,8 +99,11 @@ int main(int argc, const char * argv[]) {
                     tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
                     vector<char>(), DrawMatchesFlags::DEFAULT );
 
-        if(found)
+        if(found){
             tracker.m_trackingInfo.draw2dContour(debugMatches, Scalar(0,255,255));
+            tracker.m_trackingInfo.computePose(imageTarget, calib);
+            ShowAxes(calib, tracker.m_trackingInfo.pose3d, debugMatches);
+        }
         
         cv::imshow("vid", debugMatches);
         if(!tracker.m_warpedImg.empty())

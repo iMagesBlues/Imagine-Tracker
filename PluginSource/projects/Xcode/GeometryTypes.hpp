@@ -12,6 +12,8 @@
 #ifndef GeometryTypes_hpp
 #define GeometryTypes_hpp
 
+#include <opencv2/opencv.hpp>
+
 struct Matrix44
 {
   union
@@ -65,6 +67,11 @@ struct Transformation
   Matrix44 getMat44() const;
   
   Transformation getInverted() const;
+    
+    
+  cv::Mat Rvec;
+  cv::Mat_<float> Tvec;
+    
 private:
   Matrix33 m_rotation;
   Vector3  m_translation;

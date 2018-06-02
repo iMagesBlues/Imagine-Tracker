@@ -73,13 +73,18 @@ public class ARCamera : MonoBehaviour {
 		if (imagineARController.found) {
 			trackedImageTarget.gameObject.SetActive (true);
 
-			Matrix4x4 matrix = this.transform.localToWorldMatrix * invertYM * targetTransform * invertZM;
-			//Matrix4x4 matrix = this.transform.localToWorldMatrix * targetTransform;
+			//Matrix4x4 matrix = this.transform.localToWorldMatrix * invertYM * targetTransform * invertZM;
+			Matrix4x4 matrix = this.transform.localToWorldMatrix * targetTransform;
 
 
 			trackedImageTarget.transform.localPosition = ExtractTranslationFromMatrix (matrix);
 			trackedImageTarget.transform.localRotation = ExtractRotationFromMatrix (matrix);
 			trackedImageTarget.transform.localScale = ExtractScaleFromMatrix (matrix);
+
+			Vector3 eul = trackedImageTarget.transform.eulerAngles;
+			eul.x -= 90;
+			trackedImageTarget.transform.eulerAngles = eul;
+				
 		} 
 		else {
 			trackedImageTarget.gameObject.SetActive (false);

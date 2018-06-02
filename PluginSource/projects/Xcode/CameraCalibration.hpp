@@ -43,6 +43,7 @@ public:
 
     float cx() const;
     float cy() const;
+    
 private:
     cv::Matx33f     m_intrinsic;
     cv::Mat_<float> m_distortion;

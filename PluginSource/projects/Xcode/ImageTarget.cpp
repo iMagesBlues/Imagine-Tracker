@@ -160,6 +160,9 @@ void TrackingInfo::computePose(const ImageTarget& imageTarget, const CameraCalib
     raux.convertTo(Rvec,CV_32F);
     taux.convertTo(Tvec ,CV_32F);
     
+    pose3d.Rvec = Rvec.clone();
+    pose3d.Tvec = Tvec.clone();
+    
     cv::Mat_<float> rotMat(3,3);
     cv::Rodrigues(Rvec, rotMat);
     
@@ -172,6 +175,7 @@ void TrackingInfo::computePose(const ImageTarget& imageTarget, const CameraCalib
         }
         pose3d.t().data[col] = Tvec(col); // Copy translation component
     }
+    
     
     // Since solvePnP finds camera location, w.r.t to marker pose, to get marker pose w.r.t to the camera we invert it.
     //pose3d = pose3d.getInverted();
