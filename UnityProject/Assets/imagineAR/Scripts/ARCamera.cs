@@ -24,9 +24,9 @@ public class ARCamera : MonoBehaviour {
 
 
 	public void Start(){
-		invertYM = Matrix4x4.TRS (Vector3.zero, Quaternion.identity, new Vector3 (1, -1, 1));
+		invertYM = Matrix4x4.TRS (Vector3.zero, Quaternion.identity, new Vector3 (1, 1, 1));
 		Debug.Log ("invertYM " + invertYM.ToString ());
-		invertZM = Matrix4x4.TRS (Vector3.zero, Quaternion.identity, new Vector3 (1, 1, -1));
+		invertZM = Matrix4x4.TRS (Vector3.zero, Quaternion.identity, new Vector3 (1, 1, 1));
 		Debug.Log ("invertZM " + invertZM.ToString ());
 	}
 

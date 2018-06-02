@@ -62,7 +62,7 @@ int main(int argc, const char * argv[]) {
     
     Mat webcamImage;
     cap >> webcamImage;
-    CameraCalibration calib(webcamImage.cols, webcamImage.cols, webcamImage.cols / 2, webcamImage.rows / 2);
+    CameraCalibration calib(minW, minW, minW / 2, minH / 2);
 
     for(;;)
     {

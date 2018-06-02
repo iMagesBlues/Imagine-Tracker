@@ -174,21 +174,21 @@ void TrackingInfo::computePose(const ImageTarget& imageTarget, const CameraCalib
     cv::Mat_<float> Tvec;
     cv::Mat raux,taux;
     
-    std::vector<cv::Point2f>  scaledpoints2d;
-
-    scaledpoints2d.resize(4);
-
-    std::stringstream debug;
-    debug << "points2d = \n";
-    for(int i = 0; i < 4; i++){
-        scaledpoints2d[i].x = points2d[i].x * 4.26; //scale up to compensate for scaling down
-        scaledpoints2d[i].y = points2d[i].y * 4.26; //scale up to compensate for scaling down
-
-        debug << "(" + to_string(scaledpoints2d[i].x) + "," + to_string(scaledpoints2d[i].y) + ")\n";
-    }
-    cout << debug.str();
+//    std::vector<cv::Point2f>  scaledpoints2d;
+//
+//    scaledpoints2d.resize(4);
+//
+//    std::stringstream debug;
+//    debug << "points2d = \n";
+//    for(int i = 0; i < 4; i++){
+//        scaledpoints2d[i].x = points2d[i].x * 4.26; //scale up to compensate for scaling down
+//        scaledpoints2d[i].y = points2d[i].y * 4.26; //scale up to compensate for scaling down
+//
+//        debug << "(" + to_string(scaledpoints2d[i].x) + "," + to_string(scaledpoints2d[i].y) + ")\n";
+//    }
+//    cout << debug.str();
     
-    cv::solvePnP(imageTarget.points3d, scaledpoints2d, calibration.getIntrinsic(), calibration.getDistorsion(),raux,taux);
+    cv::solvePnP(imageTarget.points3d, points2d, calibration.getIntrinsic(), calibration.getDistorsion(),raux,taux);
     raux.convertTo(Rvec,CV_32F);
     taux.convertTo(Tvec ,CV_32F);
     

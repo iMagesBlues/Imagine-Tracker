@@ -56,12 +56,14 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API OpenWebcam(int* w, in
     *w = webcamImage.cols;
     *h = webcamImage.rows;
     
-     cameraCalibration = CameraCalibration(webcamImage.cols, webcamImage.cols, webcamImage.cols / 2, webcamImage.rows / 2);
     
     trainImg = cv::imread("trainImg.jpg");
     int minW = 300;
     int minH = (float)(trainImg.rows * minW) / trainImg.cols;
     cv::resize(trainImg, trainImg, Size(minW, minH));
+    
+    cameraCalibration =  CameraCalibration(minW, minW, minW / 2, minH / 2);
+
     
     return;
 }
