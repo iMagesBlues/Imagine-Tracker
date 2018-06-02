@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using AOT;
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Runtime.InteropServices;
@@ -10,6 +11,8 @@ public class imagineARController : MonoBehaviour
 	public Texture2D image;
 	public TextAsset database;
 
+	public bool debugImage = false;
+
 
 	[DllImport("imagineARPlugin")]
 	private static extern void OpenWebcam(out int w, out int h);
@@ -18,7 +21,7 @@ public class imagineARController : MonoBehaviour
 	private static extern void CloseWebcam();
 
 	[DllImport ("imagineARPlugin")]
-	private static extern void SetWebcamTexture(System.IntPtr texture, int w, int h);
+	private static extern void SetWebcamTexture(IntPtr texture, int w, int h);
 
 	[DllImport("imagineARPlugin")]
 	private static extern void DebugShowTexture();
@@ -35,6 +38,10 @@ public class imagineARController : MonoBehaviour
 	[DllImport("imagineARPlugin")]
 	private static extern void Train();
 
+	[DllImport("imagineARPlugin", CallingConvention = CallingConvention.Cdecl)]
+	static extern void RegisterImageTargetFoundCallback(imageTargetFoundCallback cb);
+	delegate void imageTargetFoundCallback(IntPtr tMat);
+
 	void Start()
 	{
 		InitWebcam ();
@@ -42,8 +49,6 @@ public class imagineARController : MonoBehaviour
 
 	WebCamTexture webcamTexture;
 
-	public Camera ARCamera;
-	public Renderer VideoBackground;
 
 	private void InitWebcam()
 	{
@@ -56,15 +61,18 @@ public class imagineARController : MonoBehaviour
 		tex.filterMode = FilterMode.Point;
 		tex.Apply ();
 
-		VideoBackground.material.mainTexture = tex;
+		ARCamera.Instance.videoBackground.material.mainTexture = tex;
 
 
 		// Pass texture pointer to the plugin
 		SetWebcamTexture (tex.GetNativeTexturePtr(), tex.width, tex.height);
+		// Register Callbacks
+		RegisterImageTargetFoundCallback(OnImageTargetFound);
+
 
 		//Initialize Imagetarget
-		//Initialize();
-		//Train ();
+		Initialize();
+		Train ();
 
 		StartCoroutine("CallPluginAtEndOfFrames");
 
@@ -77,7 +85,8 @@ public class imagineARController : MonoBehaviour
 			yield return new WaitForEndOfFrame();
 
 			GL.IssuePluginEvent (GetRenderEventFunc (), 1);
-			//DebugShowTexture ();
+			if(debugImage)
+				DebugShowTexture ();
 		}
 	}
 	void OnDisable(){
@@ -128,5 +137,40 @@ public class imagineARController : MonoBehaviour
 
 	public void TrainTracker(){
 		Train ();
+	}
+
+	[MonoPInvokeCallback(typeof(imageTargetFoundCallback))]
+	static void OnImageTargetFound(IntPtr tMat)
+	{
+		float[] values = new float[16];
+
+		Marshal.Copy (tMat, values, 0, 16);
+			
+		Matrix4x4 transformationM;
+
+		transformationM.m00 = values [0];
+		transformationM.m01 = values [1];
+		transformationM.m02 = values [2];
+		transformationM.m03 = values [3];
+
+		transformationM.m10 = values [4];
+		transformationM.m11 = values [5];
+		transformationM.m12 = values [6];
+		transformationM.m13 = values [7];
+
+		transformationM.m20 = values [8];
+		transformationM.m21 = values [9];
+		transformationM.m22 = values [10];
+		transformationM.m23 = values [11];
+
+		transformationM.m30 = values [12];
+		transformationM.m31 = values [13];
+		transformationM.m32 = values [14];
+		transformationM.m33 = values [15];
+
+
+		//Debug.Log(transformationM.ToString());
+		ARCamera.Instance.SetImageTargetTransform (transformationM);
+
 	}
 }

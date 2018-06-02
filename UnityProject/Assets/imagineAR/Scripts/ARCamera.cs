@@ -4,6 +4,19 @@ using UnityEngine;
 
 public class ARCamera : MonoBehaviour {
 
+	private static ARCamera instance;
+
+	public static ARCamera Instance{
+		get{
+			if (instance == null)
+				instance = GameObject.FindObjectOfType<ARCamera> ();
+
+			return instance;
+		}
+	}
+
+	public Renderer videoBackground;
+
 	Matrix4x4 invertYM, invertZM;
 	public ImageTarget trackedImageTarget;
 
@@ -52,8 +65,10 @@ public class ARCamera : MonoBehaviour {
 	{
 		Matrix4x4 matrix = this.transform.localToWorldMatrix * invertYM * transforMationMatrix * invertZM;
 
-		trackedImageTarget.transform.localPosition = ExtractTranslationFromMatrix (matrix);
-		trackedImageTarget.transform.localRotation = ExtractRotationFromMatrix (matrix);
-		trackedImageTarget.transform.localScale = ExtractScaleFromMatrix (matrix);
+		Debug.Log (matrix.ToString ());
+
+		//trackedImageTarget.transform.localPosition = ExtractTranslationFromMatrix (matrix);
+		//trackedImageTarget.transform.localRotation = ExtractRotationFromMatrix (matrix);
+		//trackedImageTarget.transform.localScale = ExtractScaleFromMatrix (matrix);
 	}
 }

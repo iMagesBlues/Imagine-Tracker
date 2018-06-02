@@ -10,7 +10,7 @@ public class ImageTarget : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		CreateMesh ();
+		//CreateMesh ();
 	}
 	
 	// Update is called once per frame

@@ -8,9 +8,9 @@
 extern "C"
 {
     //Create a callback delegate
-    typedef void(*FuncCallBack)(const char* message, int color, int size);
-    static FuncCallBack callbackInstance = nullptr;
-    void RegisterDebugCallback(FuncCallBack cb);
+    typedef void(*DebugLogCallBack)(const char* message, int color, int size);
+    static DebugLogCallBack callbackInstance = nullptr;
+    void RegisterDebugCallback(DebugLogCallBack cb);
 }
 
 //Color Enum

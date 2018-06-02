@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		2A4B55DD20B168D100FDEA38 /* DebugCPP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A4B55DC20B168D100FDEA38 /* DebugCPP.cpp */; };
+		2A7449A020C27AFF005CD561 /* CameraCalibration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A74499F20C27AFE005CD561 /* CameraCalibration.cpp */; };
+		2A7449A320C27DEE005CD561 /* GeometryTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A7449A120C27DEE005CD561 /* GeometryTypes.cpp */; };
+		2A7449A420C28B1A005CD561 /* CameraCalibration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A74499F20C27AFE005CD561 /* CameraCalibration.cpp */; };
+		2A7449A520C28B20005CD561 /* GeometryTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A7449A120C27DEE005CD561 /* GeometryTypes.cpp */; };
 		2AD2F41920BBB0790055B207 /* ImageTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD2F41720BBB0790055B207 /* ImageTarget.cpp */; };
 		2AD2F41C20BBCC640055B207 /* Tracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD2F41A20BBCC630055B207 /* Tracker.cpp */; };
 		2AD4A85920BFC1080050E4A0 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD4A85820BFC1080050E4A0 /* main.cpp */; };
@@ -43,7 +47,7 @@
 		2B6899C81CF83D6200C4BA4F /* Copy Bundle into Unity project */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = ../../../UnityProject/Assets/Plugins;
+			dstPath = ../../../UnityProject/Assets/imagineAR/Plugins;
 			dstSubfolderSpec = 16;
 			files = (
 				2B6899C91CF83DB000C4BA4F /* imagineARPlugin.bundle in Copy Bundle into Unity project */,
@@ -57,6 +61,10 @@
 		0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
 		2A4B55DB20B168D100FDEA38 /* DebugCPP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DebugCPP.hpp; sourceTree = "<group>"; };
 		2A4B55DC20B168D100FDEA38 /* DebugCPP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DebugCPP.cpp; sourceTree = "<group>"; };
+		2A74499E20C27AFD005CD561 /* CameraCalibration.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CameraCalibration.hpp; sourceTree = "<group>"; };
+		2A74499F20C27AFE005CD561 /* CameraCalibration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CameraCalibration.cpp; sourceTree = "<group>"; };
+		2A7449A120C27DEE005CD561 /* GeometryTypes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GeometryTypes.cpp; sourceTree = "<group>"; };
+		2A7449A220C27DEE005CD561 /* GeometryTypes.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GeometryTypes.hpp; sourceTree = "<group>"; };
 		2AD2F41720BBB0790055B207 /* ImageTarget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageTarget.cpp; sourceTree = "<group>"; };
 		2AD2F41820BBB0790055B207 /* ImageTarget.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ImageTarget.hpp; sourceTree = "<group>"; };
 		2AD2F41A20BBCC630055B207 /* Tracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tracker.cpp; sourceTree = "<group>"; };
@@ -147,6 +155,10 @@
 				2B6899AB1CF8396700C4BA4F /* PlatformBase.h */,
 				2A4B55DC20B168D100FDEA38 /* DebugCPP.cpp */,
 				2A4B55DB20B168D100FDEA38 /* DebugCPP.hpp */,
+				2A74499F20C27AFE005CD561 /* CameraCalibration.cpp */,
+				2A74499E20C27AFD005CD561 /* CameraCalibration.hpp */,
+				2A7449A120C27DEE005CD561 /* GeometryTypes.cpp */,
+				2A7449A220C27DEE005CD561 /* GeometryTypes.hpp */,
 				2B6899AD1CF8396700C4BA4F /* RenderAPI_D3D11.cpp */,
 				2B6899AE1CF8396700C4BA4F /* RenderAPI_D3D12.cpp */,
 				2B6899CA1CF8409A00C4BA4F /* RenderAPI_Metal.mm */,
@@ -299,6 +311,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A7449A520C28B20005CD561 /* GeometryTypes.cpp in Sources */,
+				2A7449A420C28B1A005CD561 /* CameraCalibration.cpp in Sources */,
 				2AD4A86720BFE4F60050E4A0 /* RenderAPI_Metal.mm in Sources */,
 				2AD4A86620BFE4F00050E4A0 /* RenderAPI_OpenGLCoreES.cpp in Sources */,
 				2AD4A86520BFE4E50050E4A0 /* RenderAPI.cpp in Sources */,
@@ -315,12 +329,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				2B6899BA1CF8396700C4BA4F /* imagineARPlugin.cpp in Sources */,
+				2B6899CB1CF8409A00C4BA4F /* RenderAPI_Metal.mm in Sources */,
 				2B6899B81CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp in Sources */,
 				2AD2F41920BBB0790055B207 /* ImageTarget.cpp in Sources */,
+				2A7449A320C27DEE005CD561 /* GeometryTypes.cpp in Sources */,
+				2A7449A020C27AFF005CD561 /* CameraCalibration.cpp in Sources */,
 				2B6899B91CF8396700C4BA4F /* RenderAPI.cpp in Sources */,
 				2AD2F41C20BBCC640055B207 /* Tracker.cpp in Sources */,
 				2A4B55DD20B168D100FDEA38 /* DebugCPP.cpp in Sources */,
-				2B6899CB1CF8409A00C4BA4F /* RenderAPI_Metal.mm in Sources */,
 				2B6899C11CF8399700C4BA4F /* glew.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

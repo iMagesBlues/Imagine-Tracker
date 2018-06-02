@@ -64,6 +64,6 @@ void Debug::send_log(const std::stringstream &ss, const Color &color) {
 //-------------------------------------------------------------------
 
 //Create a callback delegate
-void RegisterDebugCallback(FuncCallBack cb) {
+void RegisterDebugCallback(DebugLogCallBack cb) {
     callbackInstance = cb;
 }

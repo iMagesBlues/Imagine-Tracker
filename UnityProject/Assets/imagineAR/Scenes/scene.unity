@@ -428,6 +428,7 @@ GameObject:
   - component: {fileID: 188919736}
   - component: {fileID: 188919740}
   - component: {fileID: 188919735}
+  - component: {fileID: 188919741}
   m_Layer: 0
   m_Name: AR Camera
   m_TagString: Untagged
@@ -521,9 +522,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   image: {fileID: 2800000, guid: fb635a6078cc84a26afea7d1e7499f40, type: 3}
-  database: {fileID: 4900000, guid: ed273e63d84eb4dd1ab50fd0ee4aec95, type: 3}
-  ARCamera: {fileID: 188919738}
-  VideoBackground: {fileID: 794146172}
+  database: {fileID: 4900000, guid: 172b264fbfc7646168c06883d096f6c5, type: 3}
+  debugImage: 0
+--- !u!114 &188919741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 188919734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 277ef883b52174b95906d29f07415699, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  videoBackground: {fileID: 794146172}
+  trackedImageTarget: {fileID: 1408559722}
 --- !u!1 &333000589
 GameObject:
   m_ObjectHideFlags: 0
@@ -601,7 +614,7 @@ GameObject:
   - component: {fileID: 794146173}
   - component: {fileID: 794146172}
   m_Layer: 0
-  m_Name: VIdeo Background
+  m_Name: Video Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -615,7 +628,7 @@ Transform:
   m_GameObject: {fileID: 794146170}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 10}
-  m_LocalScale: {x: 12.8, y: 7.2, z: 1}
+  m_LocalScale: {x: -12.8, y: -7.2, z: 1}
   m_Children: []
   m_Father: {fileID: 188919739}
   m_RootOrder: 0

@@ -15,9 +15,12 @@ public class DebugCPP : MonoBehaviour
 	//------------------------------------------------------------------------------------------------
 	[DllImport("imagineARPlugin", CallingConvention = CallingConvention.Cdecl)]
 	static extern void RegisterDebugCallback(debugCallback cb);
+
 	//Create string param callback delegate
 	delegate void debugCallback(IntPtr request, int color, int size);
+
 	enum Color { red, green, blue, black, white, yellow, orange };
+
 	[MonoPInvokeCallback(typeof(debugCallback))]
 	static void OnDebugCallback(IntPtr request, int color, int size)
 	{

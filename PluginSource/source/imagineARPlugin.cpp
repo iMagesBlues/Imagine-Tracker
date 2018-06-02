@@ -22,7 +22,9 @@ static int   g_TextureWidth  = 0;
 static int   g_TextureHeight = 0;
 
 static cv::VideoCapture cap;
-static cv::Mat webcamImage, gray;
+static cv::Mat webcamImage, gray, debugMatches, trainImg;
+
+static CameraCalibration cameraCalibration;
 
 //static vector<ImageTarget> imageTargets;
 //static vector<Tracker> trackers;
@@ -54,6 +56,13 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API OpenWebcam(int* w, in
     *w = webcamImage.cols;
     *h = webcamImage.rows;
     
+     cameraCalibration = CameraCalibration(webcamImage.cols, webcamImage.cols, webcamImage.cols / 2, webcamImage.rows / 2);
+    
+    trainImg = cv::imread("trainImg.jpg");
+    int minW = 300;
+    int minH = (float)(trainImg.rows * minW) / trainImg.cols;
+    cv::resize(trainImg, trainImg, Size(minW, minH));
+    
     return;
 }
 
@@ -74,13 +83,20 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetWebcamTexture(void
     
 }
 
+//----Debug-------
+
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API DebugShowTexture()
 {
-    cv::imshow("Gray Image", gray);
+    cv::drawMatches( gray, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints,
+                    tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
+                    vector<char>(), DrawMatchesFlags::DEFAULT );
+    
+    cv::imshow("Debug", debugMatches);
 }
 
 // --------------------------------------------------------------------------
 // Build And Load ImageTargets
+
 
 extern "C" int UNITY_INTERFACE_API BuildImageTargetDatabase(Color32* img, int width, int height, const char* imgName)
 {
@@ -115,6 +131,16 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API Train()
     tracker.train(imageTarget);
     Debug::Log("init tracker done");
 
+}
+
+extern "C"
+{
+    //Create a callback delegate
+    typedef void(*ImageTargetFoundCallback)(float* transformationMat);
+    static ImageTargetFoundCallback imageTargetFoundCallbackInstance = nullptr;
+    void RegisterImageTargetFoundCallback(ImageTargetFoundCallback cb){
+        imageTargetFoundCallbackInstance = cb;
+    }
 }
 
 // --------------------------------------------------------------------------
@@ -238,8 +264,19 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
     //track imagetarget
     cv::resize(webcamImage, gray, Size(300,169));
     cv::cvtColor(gray, gray, CV_BGR2GRAY);
-    tracker.findPattern(gray);
-    //tracker.m_trackingInfo.draw2dContour(gray, CV_RGB(0,200,0));
+    bool found = tracker.findPattern(gray);
+    
+    if(!tracker.m_warpedImg.empty())
+        cv::imshow("warped", tracker.m_warpedImg);
+    
+    if(found){
+        if (imageTargetFoundCallbackInstance != nullptr){
+            tracker.m_trackingInfo.computePose(imageTarget, cameraCalibration);
+            imageTargetFoundCallbackInstance(tracker.m_trackingInfo.pose3d.getMat44().data);
+        }
+    }
+    
+
 }
 
 
