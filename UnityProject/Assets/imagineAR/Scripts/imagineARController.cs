@@ -199,7 +199,7 @@ public class imagineARController : MonoBehaviour
 		transformationM.m32 = values [11];
 		transformationM.m33 = values [15];
 
-		//Debug.Log(transformationM.ToString());
+		Debug.Log(transformationM.ToString());
 		ARCamera.Instance.SetImageTargetTransform (transformationM);
 	}
 

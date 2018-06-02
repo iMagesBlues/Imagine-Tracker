@@ -33,8 +33,8 @@ public class ARCamera : MonoBehaviour {
 	public Vector3 ExtractTranslationFromMatrix (Matrix4x4 matrix)
 	{
 		Vector3 translate;
-		translate.x = matrix.m03;
-		translate.y = matrix.m13;
+		translate.x = -matrix.m03;
+		translate.y = -matrix.m13;
 		translate.z = matrix.m23;
 		return translate;
 	}
@@ -51,13 +51,17 @@ public class ARCamera : MonoBehaviour {
 		upwards.y = matrix.m11;
 		upwards.z = matrix.m21;
 
-		return Quaternion.LookRotation (forward, upwards);
+		//hack;
+		Vector3 Eul = (Quaternion.LookRotation (forward, upwards)).eulerAngles;
+		Eul.z *= -1;
+
+		return Quaternion.Euler (Eul);
 	}
 		
 	public Vector3 ExtractScaleFromMatrix (Matrix4x4 matrix)
 	{
 		Vector3 scale;
-		scale.x = new Vector4 (matrix.m00, matrix.m10, matrix.m20, matrix.m30).magnitude;
+		scale.x = new Vector4 (matrix.m00, matrix.m10, matrix.m20, matrix.m30).magnitude * -1;
 		scale.y = new Vector4 (matrix.m01, matrix.m11, matrix.m21, matrix.m31).magnitude;
 		scale.z = new Vector4 (matrix.m02, matrix.m12, matrix.m22, matrix.m32).magnitude;
 		return scale;
@@ -75,7 +79,7 @@ public class ARCamera : MonoBehaviour {
 
 			//Matrix4x4 matrix = this.transform.localToWorldMatrix * invertYM * targetTransform * invertZM;
 			Matrix4x4 matrix = this.transform.localToWorldMatrix * targetTransform;
-
+			//Matrix4x4 matrix = this.transform.localToWorldMatrix * invertZM * targetTransform.inverse * invertYM;
 
 			trackedImageTarget.transform.localPosition = ExtractTranslationFromMatrix (matrix);
 			trackedImageTarget.transform.localRotation = ExtractRotationFromMatrix (matrix);
