@@ -42,6 +42,9 @@ public class imagineARController : MonoBehaviour
 
 	WebCamTexture webcamTexture;
 
+	public Camera ARCamera;
+	public Renderer VideoBackground;
+
 	private void InitWebcam()
 	{
 		int width = 0, height = 0;
@@ -53,15 +56,15 @@ public class imagineARController : MonoBehaviour
 		tex.filterMode = FilterMode.Point;
 		tex.Apply ();
 
-		GetComponent<Renderer>().material.mainTexture = tex;
+		VideoBackground.material.mainTexture = tex;
 
 
 		// Pass texture pointer to the plugin
 		SetWebcamTexture (tex.GetNativeTexturePtr(), tex.width, tex.height);
 
 		//Initialize Imagetarget
-		Initialize();
-		Train ();
+		//Initialize();
+		//Train ();
 
 		StartCoroutine("CallPluginAtEndOfFrames");
 
