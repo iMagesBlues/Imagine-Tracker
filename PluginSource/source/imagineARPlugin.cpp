@@ -111,6 +111,8 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API DebugShowTexture()
 
 extern "C" int UNITY_INTERFACE_API BuildImageTargetDatabase(Color32* img, int width, int height, const char* imgName)
 {
+    //TODO: Pass image path and load from plugin for better results eg. pandatest
+    
     cv::Mat imgMat(height, width, CV_8UC4, img);
     
     //scale image
@@ -309,6 +311,7 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
     if(found){
         if (imageTargetTracked != nullptr){
             tracker.m_trackingInfo.computePose(imageTarget, cameraCalibration);
+            stringstream ss;
             imageTargetTracked(tracker.m_trackingInfo.pose3d.getMat44().data);
         }
     }
