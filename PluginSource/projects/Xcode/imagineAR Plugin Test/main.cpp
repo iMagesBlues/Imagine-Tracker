@@ -29,23 +29,7 @@ void LoadImageToDatabase()
     imagetarget.ExportDatabase();
 }
 
-void ShowAxes(CameraCalibration calib, Transformation tMat, Mat& img)
-{
-    std::vector<cv::Point3d> pts;
-    pts.push_back(Point3d(0,0,0));
-    pts.push_back(Point3d(0.5,0,0));
-    pts.push_back(Point3d(0,0.5,0));
-    pts.push_back(Point3d(0,0,0.5));
-    
-    std::vector<cv::Point2d> newpts;
 
-    cv::projectPoints(pts, tMat.Rvec, tMat.Tvec, calib.getIntrinsic(), calib.getDistorsion(), newpts);
-    
-    cv::line(img, newpts.at(0), newpts.at(1), Scalar(0,0,255),2);
-    cv::line(img, newpts.at(0), newpts.at(2), Scalar(0,255,0),2);
-    cv::line(img, newpts.at(0), newpts.at(3), Scalar(255,0,0),2);
-
-}
 
 int main(int argc, const char * argv[]) {
     
@@ -100,9 +84,10 @@ int main(int argc, const char * argv[]) {
                     vector<char>(), DrawMatchesFlags::DEFAULT );
 
         if(found){
-            tracker.m_trackingInfo.draw2dContour(debugMatches, Scalar(0,255,255));
+            
             tracker.m_trackingInfo.computePose(imageTarget, calib);
-            ShowAxes(calib, tracker.m_trackingInfo.pose3d, debugMatches);
+            tracker.m_trackingInfo.draw2dContour(debugMatches, Scalar(0,255,255));
+            tracker.m_trackingInfo.showAxes(calib, tracker.m_trackingInfo.pose3d, debugMatches);
         }
         
         cv::imshow("vid", debugMatches);

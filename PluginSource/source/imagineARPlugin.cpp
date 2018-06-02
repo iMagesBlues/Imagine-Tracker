@@ -92,8 +92,11 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API DebugShowTexture()
                     tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
                     vector<char>(), DrawMatchesFlags::DEFAULT );
     
-    if(tracker.m_trackingInfo.found)
+    if(tracker.m_trackingInfo.found){
         tracker.m_trackingInfo.draw2dContour(debugMatches, Scalar(0,255,255));
+        tracker.m_trackingInfo.showAxes(cameraCalibration, tracker.m_trackingInfo.pose3d, debugMatches);
+
+    }
     
     cv::imshow("Debug", debugMatches);
     

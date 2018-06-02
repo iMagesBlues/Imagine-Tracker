@@ -53,6 +53,7 @@ struct TrackingInfo
     
     void draw2dContour(cv::Mat& image, cv::Scalar color) const;
     void computePose(const ImageTarget& imageTarget, const CameraCalibration& calibration);
+    void showAxes(CameraCalibration calib, Transformation tMat, Mat& img);
 };
 
 

@@ -150,6 +150,24 @@ void TrackingInfo::draw2dContour(cv::Mat& image, cv::Scalar color) const
     }
 }
 
+void TrackingInfo::showAxes(CameraCalibration calib, Transformation tMat, Mat& img)
+{
+    std::vector<cv::Point3d> pts;
+    pts.push_back(Point3d(0,0,0));
+    pts.push_back(Point3d(0.5,0,0));
+    pts.push_back(Point3d(0,0.5,0));
+    pts.push_back(Point3d(0,0,0.5));
+    
+    std::vector<cv::Point2d> newpts;
+    
+    cv::projectPoints(pts, tMat.Rvec, tMat.Tvec, calib.getIntrinsic(), calib.getDistorsion(), newpts);
+    
+    cv::line(img, newpts.at(0), newpts.at(1), Scalar(0,0,255),2);
+    cv::line(img, newpts.at(0), newpts.at(2), Scalar(0,255,0),2);
+    cv::line(img, newpts.at(0), newpts.at(3), Scalar(255,0,0),2);
+    
+}
+
 void TrackingInfo::computePose(const ImageTarget& imageTarget, const CameraCalibration& calibration)
 {
     cv::Mat Rvec;
@@ -160,8 +178,8 @@ void TrackingInfo::computePose(const ImageTarget& imageTarget, const CameraCalib
     raux.convertTo(Rvec,CV_32F);
     taux.convertTo(Tvec ,CV_32F);
     
-    pose3d.Rvec = Rvec.clone();
-    pose3d.Tvec = Tvec.clone();
+    pose3d.Rvec = Rvec;
+    pose3d.Tvec = Tvec;
     
     cv::Mat_<float> rotMat(3,3);
     cv::Rodrigues(Rvec, rotMat);
