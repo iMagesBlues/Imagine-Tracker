@@ -87,6 +87,14 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetWebcamTexture(void
 
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API DebugShowTexture()
 {
+    
+    cv::drawMatches( gray, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints,
+                    tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
+                    vector<char>(), DrawMatchesFlags::DEFAULT );
+    
+    if(tracker.m_trackingInfo.found)
+        tracker.m_trackingInfo.draw2dContour(debugMatches, Scalar(0,255,255));
+    
     cv::imshow("Debug", debugMatches);
     
     if(!tracker.m_warpedImg.empty())
@@ -135,11 +143,25 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API Train()
 
 extern "C"
 {
-    //Create a callback delegate
-    typedef void(*ImageTargetFoundCallback)(float* transformationMat);
-    static ImageTargetFoundCallback imageTargetFoundCallbackInstance = nullptr;
+    //Imagetarget Tracked
+    typedef void(*ImageTargetTrackedCallback)(float* transformationMat);
+    static ImageTargetTrackedCallback imageTargetTracked = nullptr;
+    void RegisterImageTargetTrackedCallback(ImageTargetTrackedCallback cb){
+        imageTargetTracked = cb;
+    }
+    
+    //Imagetarget Found
+    typedef void(*ImageTargetFoundCallback)();
+    static ImageTargetFoundCallback imageTargetFound = nullptr;
     void RegisterImageTargetFoundCallback(ImageTargetFoundCallback cb){
-        imageTargetFoundCallbackInstance = cb;
+        imageTargetFound = cb;
+    }
+    
+    //Imagetarget Lost
+    typedef void(*ImageTargetLostCallback)();
+    static ImageTargetLostCallback imageTargetLost = nullptr;
+    void RegisterImageTargetLostCallback(ImageTargetLostCallback cb){
+        imageTargetLost = cb;
     }
 }
 
@@ -264,15 +286,30 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
     //track imagetarget
     cv::resize(webcamImage, gray, Size(300,169));
     cv::cvtColor(gray, gray, CV_BGR2GRAY);
-    tracker.m_trackingInfo.found = tracker.findPattern(gray);
+    bool found = tracker.findPattern(gray);
     
-    if(tracker.m_trackingInfo.found){
-        if (imageTargetFoundCallbackInstance != nullptr){
-            tracker.m_trackingInfo.computePose(imageTarget, cameraCalibration);
-            imageTargetFoundCallbackInstance(tracker.m_trackingInfo.pose3d.getMat44().data);
+    //Found Target
+    if(found && !tracker.m_trackingInfo.found)
+    {
+        if(imageTargetFound != nullptr){
+            imageTargetFound();
         }
     }
-    
+    //Lost Target
+    else if(!found && tracker.m_trackingInfo.found)
+    {
+        if(imageTargetLost != nullptr){
+            imageTargetLost();
+        }
+    }
+    //Target Tracked
+    if(found){
+        if (imageTargetTracked != nullptr){
+            tracker.m_trackingInfo.computePose(imageTarget, cameraCalibration);
+            imageTargetTracked(tracker.m_trackingInfo.pose3d.getMat44().data);
+        }
+    }
+    tracker.m_trackingInfo.found = found;
 
 }
 

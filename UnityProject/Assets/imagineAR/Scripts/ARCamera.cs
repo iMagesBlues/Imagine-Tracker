@@ -18,7 +18,10 @@ public class ARCamera : MonoBehaviour {
 	public Renderer videoBackground;
 
 	Matrix4x4 invertYM, invertZM;
+	Matrix4x4 targetTransform;
+
 	public ImageTarget trackedImageTarget;
+
 
 	public void Start(){
 		invertYM = Matrix4x4.TRS (Vector3.zero, Quaternion.identity, new Vector3 (1, -1, 1));
@@ -63,12 +66,25 @@ public class ARCamera : MonoBehaviour {
 		
 	public void SetImageTargetTransform (Matrix4x4 transforMationMatrix)
 	{
-		Matrix4x4 matrix = this.transform.localToWorldMatrix * invertYM * transforMationMatrix * invertZM;
-
-		Debug.Log (matrix.ToString ());
-
-		//trackedImageTarget.transform.localPosition = ExtractTranslationFromMatrix (matrix);
-		//trackedImageTarget.transform.localRotation = ExtractRotationFromMatrix (matrix);
-		//trackedImageTarget.transform.localScale = ExtractScaleFromMatrix (matrix);
+		targetTransform = transforMationMatrix;
 	}
+
+	void Update(){
+		if (imagineARController.found) {
+			trackedImageTarget.gameObject.SetActive (true);
+
+			Matrix4x4 matrix = this.transform.localToWorldMatrix * invertYM * targetTransform * invertZM;
+			//Matrix4x4 matrix = this.transform.localToWorldMatrix * targetTransform;
+
+
+			trackedImageTarget.transform.localPosition = ExtractTranslationFromMatrix (matrix);
+			trackedImageTarget.transform.localRotation = ExtractRotationFromMatrix (matrix);
+			trackedImageTarget.transform.localScale = ExtractScaleFromMatrix (matrix);
+		} 
+		else {
+			trackedImageTarget.gameObject.SetActive (false);
+
+		}
+	}
+		
 }

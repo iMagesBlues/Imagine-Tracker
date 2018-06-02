@@ -46,7 +46,7 @@ struct ImageTarget
 struct TrackingInfo
 {
     
-    bool                      found;
+    bool                      found = false;
     cv::Mat                   homography;
     std::vector<cv::Point2f>  points2d;
     Transformation            pose3d;

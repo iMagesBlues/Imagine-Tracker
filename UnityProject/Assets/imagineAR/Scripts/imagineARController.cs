@@ -40,7 +40,27 @@ public class imagineARController : MonoBehaviour
 
 	[DllImport("imagineARPlugin", CallingConvention = CallingConvention.Cdecl)]
 	static extern void RegisterImageTargetFoundCallback(imageTargetFoundCallback cb);
-	delegate void imageTargetFoundCallback(IntPtr tMat);
+	delegate void imageTargetFoundCallback();
+
+	[DllImport("imagineARPlugin", CallingConvention = CallingConvention.Cdecl)]
+	static extern void RegisterImageTargetLostCallback(imageTargetLostCallback cb);
+	delegate void imageTargetLostCallback();
+
+	[DllImport("imagineARPlugin", CallingConvention = CallingConvention.Cdecl)]
+	static extern void RegisterImageTargetTrackedCallback(imageTargetTrackedCallback cb);
+	delegate void imageTargetTrackedCallback(IntPtr tMat);
+
+
+	private static imagineARController _instance;
+	public static imagineARController Instance{
+		get{
+			if (_instance == null) {
+				GameObject.FindObjectOfType<imagineARController> ();
+			}
+
+			return _instance;
+		}
+	}
 
 	void Start()
 	{
@@ -67,28 +87,29 @@ public class imagineARController : MonoBehaviour
 		// Pass texture pointer to the plugin
 		SetWebcamTexture (tex.GetNativeTexturePtr(), tex.width, tex.height);
 		// Register Callbacks
-		RegisterImageTargetFoundCallback(OnImageTargetFound);
+		RegisterImageTargetFoundCallback   ( OnImageTargetFound );
+		RegisterImageTargetLostCallback    ( OnImageTargetLost );
+		RegisterImageTargetTrackedCallback ( OnImageTargetTracked );
+
 
 
 		//Initialize Imagetarget
 		Initialize();
 		Train ();
 
-		StartCoroutine("CallPluginAtEndOfFrames");
-
+		updatePlugin = true;
 	}
-		
-		
-	private IEnumerator CallPluginAtEndOfFrames()
-	{
-		while (true) {
-			yield return new WaitForEndOfFrame();
 
+	bool updatePlugin = false;
+
+	void Update(){
+		if (updatePlugin) {
 			GL.IssuePluginEvent (GetRenderEventFunc (), 1);
 			if(debugImage)
 				DebugShowTexture ();
 		}
 	}
+		
 	void OnDisable(){
 		CloseWebcam ();
 	}
@@ -139,8 +160,8 @@ public class imagineARController : MonoBehaviour
 		Train ();
 	}
 
-	[MonoPInvokeCallback(typeof(imageTargetFoundCallback))]
-	static void OnImageTargetFound(IntPtr tMat)
+	[MonoPInvokeCallback(typeof(imageTargetTrackedCallback))]
+	static void OnImageTargetTracked(IntPtr tMat)
 	{
 		float[] values = new float[16];
 
@@ -149,28 +170,40 @@ public class imagineARController : MonoBehaviour
 		Matrix4x4 transformationM;
 
 		transformationM.m00 = values [0];
-		transformationM.m01 = values [1];
-		transformationM.m02 = values [2];
-		transformationM.m03 = values [3];
+		transformationM.m01 = values [4];
+		transformationM.m02 = values [8];
+		transformationM.m03 = values [12];
 
-		transformationM.m10 = values [4];
+		transformationM.m10 = values [1];
 		transformationM.m11 = values [5];
-		transformationM.m12 = values [6];
-		transformationM.m13 = values [7];
+		transformationM.m12 = values [9];
+		transformationM.m13 = values [13];
 
-		transformationM.m20 = values [8];
-		transformationM.m21 = values [9];
+		transformationM.m20 = values [2];
+		transformationM.m21 = values [6];
 		transformationM.m22 = values [10];
-		transformationM.m23 = values [11];
+		transformationM.m23 = values [14];
 
-		transformationM.m30 = values [12];
-		transformationM.m31 = values [13];
-		transformationM.m32 = values [14];
+		transformationM.m30 = values [3];
+		transformationM.m31 = values [7];
+		transformationM.m32 = values [11];
 		transformationM.m33 = values [15];
-
 
 		//Debug.Log(transformationM.ToString());
 		ARCamera.Instance.SetImageTargetTransform (transformationM);
+	}
 
+	public static bool found = false;
+
+	[MonoPInvokeCallback(typeof(imageTargetFoundCallback))]
+	static void OnImageTargetFound(){
+		Debug.LogWarning ("Found");
+		found = true;
+	}
+
+	[MonoPInvokeCallback(typeof(imageTargetLostCallback))]
+	static void OnImageTargetLost(){
+		Debug.LogWarning ("Lost");
+		found = false;
 	}
 }

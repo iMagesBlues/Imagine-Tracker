@@ -24,5 +24,6 @@ public class imagineARControllerEditor : Editor {
 		if (GUILayout.Button ("Train")) {
 			_target.TrainTracker ();
 		}
+
 	}
 }
