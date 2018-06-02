@@ -87,11 +87,11 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetWebcamTexture(void
 
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API DebugShowTexture()
 {
-    cv::drawMatches( gray, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints,
-                    tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
-                    vector<char>(), DrawMatchesFlags::DEFAULT );
-    
     cv::imshow("Debug", debugMatches);
+    
+    if(!tracker.m_warpedImg.empty())
+        cv::imshow("warped", tracker.m_warpedImg);
+    
 }
 
 // --------------------------------------------------------------------------
@@ -264,12 +264,9 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
     //track imagetarget
     cv::resize(webcamImage, gray, Size(300,169));
     cv::cvtColor(gray, gray, CV_BGR2GRAY);
-    bool found = tracker.findPattern(gray);
+    tracker.m_trackingInfo.found = tracker.findPattern(gray);
     
-    if(!tracker.m_warpedImg.empty())
-        cv::imshow("warped", tracker.m_warpedImg);
-    
-    if(found){
+    if(tracker.m_trackingInfo.found){
         if (imageTargetFoundCallbackInstance != nullptr){
             tracker.m_trackingInfo.computePose(imageTarget, cameraCalibration);
             imageTargetFoundCallbackInstance(tracker.m_trackingInfo.pose3d.getMat44().data);

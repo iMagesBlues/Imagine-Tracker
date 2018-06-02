@@ -65,15 +65,17 @@ int main(int argc, const char * argv[]) {
 
         bool found = tracker.findPattern(gray);
 
-        if(found)
-            tracker.m_trackingInfo.draw2dContour(gray, Scalar(255,255,0));
+      
         
         //cv::drawMatches(gray, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints, tracker.m_matches, debugMatches, DrawMatchesFlags::DRAW_OVER_OUTIMG);
         
         cv::drawMatches( gray, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints,
-                    tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(255,0,0),
+                    tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
                     vector<char>(), DrawMatchesFlags::DEFAULT );
 
+        if(found)
+            tracker.m_trackingInfo.draw2dContour(debugMatches, Scalar(0,255,255));
+        
         cv::imshow("vid", debugMatches);
         if(!tracker.m_warpedImg.empty())
             cv::imshow("warped", tracker.m_warpedImg);
