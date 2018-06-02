@@ -98,15 +98,25 @@ public class imagineARController : MonoBehaviour
 		Train ();
 
 		updatePlugin = true;
+		StartCoroutine ("UpdateRoutine");
 	}
 
 	bool updatePlugin = false;
 
-	void Update(){
-		if (updatePlugin) {
+//	void Update(){
+//		if (updatePlugin) {
+//			GL.IssuePluginEvent (GetRenderEventFunc (), 1);
+//			if(debugImage)
+//				DebugShowTexture ();
+//		}
+//	}
+
+	IEnumerator UpdateRoutine(){
+		while (true) {
+			yield return new WaitForEndOfFrame ();
 			GL.IssuePluginEvent (GetRenderEventFunc (), 1);
-			if(debugImage)
-				DebugShowTexture ();
+				if(debugImage)
+					DebugShowTexture ();
 		}
 	}
 		
