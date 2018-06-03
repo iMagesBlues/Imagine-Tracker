@@ -13,6 +13,7 @@
 #include <iostream>
 #include "CameraCalibration.hpp"
 #include "GeometryTypes.hpp"
+#include "ARUtils.hpp"
 
 int ImageTarget::BuildFromImage(const Mat& scaledImage, string imgName){
     bool result = true;
@@ -20,7 +21,7 @@ int ImageTarget::BuildFromImage(const Mat& scaledImage, string imgName){
     name = imgName;
     image = scaledImage.clone();
     size = Size(image.cols, image.rows);
-    GetGray(image, grayImg);
+    ARUtils::GetGray(image, grayImg);
     
     points2d.resize(4);
     points3d.resize(4);
@@ -130,15 +131,6 @@ void ImageTarget::ImportDatabase(string imgName)
     
 }
 
-void ImageTarget::GetGray(const cv::Mat& image, cv::Mat& gray)
-{
-    if (image.channels()  == 3)
-        cv::cvtColor(image, gray, CV_BGR2GRAY);
-    else if (image.channels() == 4)
-        cv::cvtColor(image, gray, CV_BGRA2GRAY);
-    else if (image.channels() == 1)
-        gray = image;
-}
 
 //---------Tracking Info-----------------
 

@@ -34,10 +34,8 @@ struct ImageTarget
     vector<Point3f>  points3d;
     
     int BuildFromImage(const Mat& img, string imgName);
-    void GetGray(const Mat& image, Mat& gray);
     void ExportDatabase();
     void ImportDatabase(string imgName);
-    
 };
 
 /**

@@ -13,16 +13,14 @@
 #include "Tracker.hpp"
 #include "GeometryTypes.hpp"
 #include "CameraCalibration.hpp"
+#include "ARUtils.hpp"
 
 void LoadImageToDatabase()
 {
     cv::Mat img;
     img = cv::imread("panda.jpg");
     
-    int minW = 300;
-    int minH = (float)(img.rows * minW) / img.cols;
-    
-    cv::resize(img, img, Size(minW, minH));
+    ARUtils::Resize(img, img);
     
     ImageTarget imagetarget;
     imagetarget.BuildFromImage(img, "pandatest");
@@ -36,7 +34,7 @@ int main(int argc, const char * argv[]) {
 
     //LoadImageToDatabase();
     
-    
+    //return 0;
         
     ImageTarget imageTarget;
     imageTarget.ImportDatabase("pandatest");
@@ -55,29 +53,23 @@ int main(int argc, const char * argv[]) {
     cv::namedWindow("warped");
     
     cv::Mat trainImg;
-    trainImg = cv::imread("panda.jpg");
-    int minW = 300;
-    int minH = (float)(trainImg.rows * minW) / trainImg.cols;
-    cv::resize(trainImg, trainImg, Size(minW, minH));
+    trainImg = cv::imread("trainImg.jpg");
+    ARUtils::Resize(trainImg, trainImg);
     
     Mat webcamImage;
     cap >> webcamImage;
-    CameraCalibration calib(minW, minW, minW / 2, minH / 2);
-
+    cv::Size min = ARUtils::GetScaledSize(cv::Size(webcamImage.cols, webcamImage.rows));
+    CameraCalibration calib(min.width, min.width, min.width / 2, min.height / 2);
+    
     for(;;)
     {
         cv::Mat frame, small, gray, debugMatches;
         cap >> frame;
-        cv::resize(frame, small, Size(300,169));
-        cv::cvtColor(small, gray, CV_BGR2GRAY);
-        
-        //cv::equalizeHist( gray, gray );
+
+        ARUtils::Resize(frame, small);
+        ARUtils::GetGray(small, gray);
 
         bool found = tracker.findPattern(gray);
-
-      
-        
-        //cv::drawMatches(gray, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints, tracker.m_matches, debugMatches, DrawMatchesFlags::DRAW_OVER_OUTIMG);
         
         cv::drawMatches( gray, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints,
                     tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
