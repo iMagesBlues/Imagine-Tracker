@@ -24,9 +24,9 @@ public class ARCamera : MonoBehaviour {
 
 
 	public void Start(){
-		invertYM = Matrix4x4.TRS (Vector3.zero, Quaternion.identity, new Vector3 (1, 1, 1));
+		invertYM = Matrix4x4.TRS (Vector3.zero, Quaternion.Euler(0, 0, 0), new Vector3 (1, 1, 1));
 		Debug.Log ("invertYM " + invertYM.ToString ());
-		invertZM = Matrix4x4.TRS (Vector3.zero, Quaternion.identity, new Vector3 (1, 1, 1));
+		invertZM = Matrix4x4.TRS (Vector3.zero, Quaternion.Euler(0, 0, 0), new Vector3 (1, 1, 1));
 		Debug.Log ("invertZM " + invertZM.ToString ());
 	}
 
@@ -51,17 +51,15 @@ public class ARCamera : MonoBehaviour {
 		upwards.y = matrix.m11;
 		upwards.z = matrix.m21;
 
-		//hack;
-		Vector3 Eul = (Quaternion.LookRotation (forward, upwards)).eulerAngles;
-		Eul.z *= -1;
+		Quaternion rot = Quaternion.LookRotation (forward, upwards);
 
-		return Quaternion.Euler (Eul);
+		return Quaternion.Euler(new Vector3( rot.eulerAngles.x - 90, rot.eulerAngles.y, -rot.eulerAngles.z));
 	}
 		
 	public Vector3 ExtractScaleFromMatrix (Matrix4x4 matrix)
 	{
 		Vector3 scale;
-		scale.x = new Vector4 (matrix.m00, matrix.m10, matrix.m20, matrix.m30).magnitude * -1;
+		scale.x = new Vector4 (matrix.m00, matrix.m10, matrix.m20, matrix.m30).magnitude;
 		scale.y = new Vector4 (matrix.m01, matrix.m11, matrix.m21, matrix.m31).magnitude;
 		scale.z = new Vector4 (matrix.m02, matrix.m12, matrix.m22, matrix.m32).magnitude;
 		return scale;
@@ -76,18 +74,17 @@ public class ARCamera : MonoBehaviour {
 	void Update(){
 		if (imagineARController.found) {
 			trackedImageTarget.gameObject.SetActive (true);
-
-			//Matrix4x4 matrix = this.transform.localToWorldMatrix * invertYM * targetTransform * invertZM;
-			Matrix4x4 matrix = this.transform.localToWorldMatrix * targetTransform;
-			//Matrix4x4 matrix = this.transform.localToWorldMatrix * invertZM * targetTransform.inverse * invertYM;
+			Matrix4x4 matrix = this.transform.localToWorldMatrix * invertYM * targetTransform * invertZM;
+			//Matrix4x4 matrix = this.transform.localToWorldMatrix * targetTransform;
+			//Matrix4x4 matrix = this.transform.localToWorldMatrix * invertZM * targetTransform.inverse * invertYM;//wrong
 
 			trackedImageTarget.transform.localPosition = ExtractTranslationFromMatrix (matrix);
 			trackedImageTarget.transform.localRotation = ExtractRotationFromMatrix (matrix);
 			trackedImageTarget.transform.localScale = ExtractScaleFromMatrix (matrix);
 
-			Vector3 eul = trackedImageTarget.transform.eulerAngles;
-			eul.x -= 90;
-			trackedImageTarget.transform.eulerAngles = eul;
+			//Vector3 eul = trackedImageTarget.transform.eulerAngles;
+			//eul.x -= 90;
+			//trackedImageTarget.transform.localEulerAngles = eul;
 				
 		} 
 		else {

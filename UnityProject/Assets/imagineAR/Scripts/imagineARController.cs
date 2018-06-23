@@ -98,18 +98,18 @@ public class imagineARController : MonoBehaviour
 		Train ();
 
 		updatePlugin = true;
-		StartCoroutine ("UpdateRoutine");
+		//StartCoroutine ("UpdateRoutine");
 	}
 
 	bool updatePlugin = false;
 
-//	void Update(){
-//		if (updatePlugin) {
-//			GL.IssuePluginEvent (GetRenderEventFunc (), 1);
-//			if(debugImage)
-//				DebugShowTexture ();
-//		}
-//	}
+	void Update(){
+		if (updatePlugin) {
+			GL.IssuePluginEvent (GetRenderEventFunc (), 1);
+			if(debugImage)
+				DebugShowTexture ();
+		}
+	}
 
 	IEnumerator UpdateRoutine(){
 		while (true) {
@@ -198,6 +198,7 @@ public class imagineARController : MonoBehaviour
 		transformationM.m31 = values [7];
 		transformationM.m32 = values [11];
 		transformationM.m33 = values [15];
+
 
 		Debug.Log(transformationM.ToString());
 		ARCamera.Instance.SetImageTargetTransform (transformationM);
