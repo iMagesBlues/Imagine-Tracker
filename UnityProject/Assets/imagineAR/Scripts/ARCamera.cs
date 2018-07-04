@@ -20,9 +20,13 @@ public class ARCamera : MonoBehaviour {
 	Matrix4x4 invertYM, invertZM;
 	Matrix4x4 targetTransform;
 
+	public Vector3 ypos, yeul, ysca = Vector3.one;
+	public Vector3 zpos, zeul, zsca = Vector3.one;
+
+
 	public ImageTarget trackedImageTarget;
 
-
+	//TODO: try rotating x by 90 and offset x y z by sin cos angles
 	public void Start(){
 		invertYM = Matrix4x4.TRS (Vector3.zero, Quaternion.Euler(0, 0, 0), new Vector3 (1, 1, 1));
 		Debug.Log ("invertYM " + invertYM.ToString ());
@@ -53,7 +57,7 @@ public class ARCamera : MonoBehaviour {
 
 		Quaternion rot = Quaternion.LookRotation (forward, upwards);
 
-		return Quaternion.Euler(new Vector3( rot.eulerAngles.x - 90, rot.eulerAngles.y, -rot.eulerAngles.z));
+		return rot;
 	}
 		
 	public Vector3 ExtractScaleFromMatrix (Matrix4x4 matrix)
@@ -74,17 +78,21 @@ public class ARCamera : MonoBehaviour {
 	void Update(){
 		if (imagineARController.found) {
 			trackedImageTarget.gameObject.SetActive (true);
-			Matrix4x4 matrix = this.transform.localToWorldMatrix * invertYM * targetTransform * invertZM;
-			//Matrix4x4 matrix = this.transform.localToWorldMatrix * targetTransform;
-			//Matrix4x4 matrix = this.transform.localToWorldMatrix * invertZM * targetTransform.inverse * invertYM;//wrong
+
+			Matrix4x4 yM = Matrix4x4.TRS (ypos, Quaternion.Euler (yeul), ysca);
+			Matrix4x4 zM = Matrix4x4.TRS (zpos, Quaternion.Euler (zeul), zsca);
+
+			Debug.LogWarning ("yM = \n" + yM);
+			Debug.LogWarning ("zM = \n" + zM);
+
+
+			Matrix4x4 matrix = this.transform.localToWorldMatrix * targetTransform * yM * zM;
 
 			trackedImageTarget.transform.localPosition = ExtractTranslationFromMatrix (matrix);
 			trackedImageTarget.transform.localRotation = ExtractRotationFromMatrix (matrix);
 			trackedImageTarget.transform.localScale = ExtractScaleFromMatrix (matrix);
 
-			//Vector3 eul = trackedImageTarget.transform.eulerAngles;
-			//eul.x -= 90;
-			//trackedImageTarget.transform.localEulerAngles = eul;
+
 				
 		} 
 		else {

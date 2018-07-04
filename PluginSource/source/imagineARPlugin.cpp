@@ -12,10 +12,12 @@
 #include <DebugCPP.hpp>
 #include <ImageTarget.hpp>
 #include <Tracker.hpp>
+#include "ARUtils.hpp"
 
 
 // --------------------------------------------------------------------------
 // SetTextureFromUnity, an example function we export which is called by one of the scripts.
+
 
 static void* g_TextureHandle = NULL;
 static int   g_TextureWidth  = 0;
@@ -58,11 +60,10 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API OpenWebcam(int* w, in
     
     
     trainImg = cv::imread("trainImg.jpg");
-    int minW = 300;
-    int minH = (float)(trainImg.rows * minW) / trainImg.cols;
-    cv::resize(trainImg, trainImg, Size(minW, minH));
+    ARUtils::Resize(trainImg, trainImg);
+    Size min = ARUtils::GetScaledSize(Size(webcamImage.cols, webcamImage.rows));
     
-    cameraCalibration =  CameraCalibration(minW, minW, minW / 2, minH / 2);
+    cameraCalibration =  CameraCalibration(min.width, min.width, min.width / 2, min.height / 2);
 
     
     return;
@@ -119,9 +120,7 @@ extern "C" int UNITY_INTERFACE_API BuildImageTargetDatabase(Color32* img, int wi
     
     //scale image
     cv::Mat scaledMat;
-    float maxWidth = 300;
-    float aspect = (float)width / height;
-    cv::resize(imgMat, scaledMat, Size(maxWidth, maxWidth / aspect));
+    ARUtils::Resize(imgMat, scaledMat);
     
     //create new ImageTarget
     ImageTarget imageTarget;
@@ -290,9 +289,11 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
     
 	RenderWebcamTexture();
     
+    //process frame
+    ARUtils::Resize(webcamImage, gray);
+    ARUtils::GetGray(gray, gray);
+    
     //track imagetarget
-    cv::resize(webcamImage, gray, Size(300,169));
-    cv::cvtColor(gray, gray, CV_BGR2GRAY);
     bool found = tracker.findPattern(gray);
     
     //Found Target

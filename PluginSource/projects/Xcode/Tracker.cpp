@@ -254,7 +254,7 @@ bool Tracker::refineMatchesWithHomography
     cv::Mat& homography
     )
 {
-    const int minNumberMatchesAllowed = 12;
+    const int minNumberMatchesAllowed = 6;
 
     if (matches.size() < minNumberMatchesAllowed)
         return false;
@@ -278,7 +278,9 @@ bool Tracker::refineMatchesWithHomography
                                     dstPoints, 
                                     CV_FM_RANSAC,
                                     reprojectionThreshold,
-                                    inliersMask);
+                                    inliersMask,
+                                    2000,
+                                    0.955);
 
     std::vector<cv::DMatch> inliers;
     for (size_t i=0; i<inliersMask.size(); i++)
