@@ -22,6 +22,7 @@ public class ARCamera : MonoBehaviour {
 
 	public Vector3 ypos, yeul, ysca = Vector3.one;
 	public Vector3 zpos, zeul, zsca = Vector3.one;
+	public float mulx = -1, muly = -1, mulz = 1;
 
 
 	public ImageTarget trackedImageTarget;
@@ -37,9 +38,9 @@ public class ARCamera : MonoBehaviour {
 	public Vector3 ExtractTranslationFromMatrix (Matrix4x4 matrix)
 	{
 		Vector3 translate;
-		translate.x = -matrix.m03;
-		translate.y = -matrix.m13;
-		translate.z = matrix.m23;
+		translate.x = mulx * matrix.m03;
+		translate.y = muly * matrix.m13;
+		translate.z = mulz * matrix.m23;
 		return translate;
 	}
 		
@@ -57,15 +58,20 @@ public class ARCamera : MonoBehaviour {
 
 		Quaternion rot = Quaternion.LookRotation (forward, upwards);
 
-		return rot;
+		//flip right handed to left handed to right handed
+		rot.x *= -1;
+		rot.y *= -1;
+		rot = Quaternion.Inverse (rot);
+
+		return rot * Quaternion.Euler(-90, 0, 0);
 	}
 		
 	public Vector3 ExtractScaleFromMatrix (Matrix4x4 matrix)
 	{
 		Vector3 scale;
-		scale.x = new Vector4 (matrix.m00, matrix.m10, matrix.m20, matrix.m30).magnitude;
-		scale.y = new Vector4 (matrix.m01, matrix.m11, matrix.m21, matrix.m31).magnitude;
-		scale.z = new Vector4 (matrix.m02, matrix.m12, matrix.m22, matrix.m32).magnitude;
+		scale.x = new Vector4 (matrix.m00, matrix.m10, matrix.m20, matrix.m30).magnitude;// * zsca.x;
+		scale.y = new Vector4 (matrix.m01, matrix.m11, matrix.m21, matrix.m31).magnitude;// * zsca.y;
+		scale.z = new Vector4 (matrix.m02, matrix.m12, matrix.m22, matrix.m32).magnitude;// * zsca.z;
 		return scale;
 	}
 		
@@ -86,7 +92,7 @@ public class ARCamera : MonoBehaviour {
 			Debug.LogWarning ("zM = \n" + zM);
 
 
-			Matrix4x4 matrix = this.transform.localToWorldMatrix * targetTransform * yM * zM;
+			Matrix4x4 matrix = this.transform.localToWorldMatrix * zM * targetTransform * yM;
 
 			trackedImageTarget.transform.localPosition = ExtractTranslationFromMatrix (matrix);
 			trackedImageTarget.transform.localRotation = ExtractRotationFromMatrix (matrix);
