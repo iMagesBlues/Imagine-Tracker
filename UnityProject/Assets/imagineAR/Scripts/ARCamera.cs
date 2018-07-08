@@ -58,9 +58,16 @@ public class ARCamera : MonoBehaviour {
 
 		Quaternion rot = Quaternion.LookRotation (forward, upwards);
 
-		//flip right handed to left handed to right handed
-		rot.x *= -1;
+		//flip right handed to left handed to right handed (back cam - unmirrored x)
+		//make sure to use mulx = 1 
 		rot.y *= -1;
+		rot.w *= -1;
+
+		////flip right handed to left handed to right handed (front cam - mirrored x)
+		//make sure to use mulx = -1 
+		//rot.x *= -1;
+		//rot.y *= -1;
+
 		rot = Quaternion.Inverse (rot);
 
 		return rot * Quaternion.Euler(-90, 0, 0);
