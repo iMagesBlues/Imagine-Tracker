@@ -95,8 +95,8 @@ public class ARCamera : MonoBehaviour {
 			Matrix4x4 yM = Matrix4x4.TRS (ypos, Quaternion.Euler (yeul), ysca);
 			Matrix4x4 zM = Matrix4x4.TRS (zpos, Quaternion.Euler (zeul), zsca);
 
-			Debug.LogWarning ("yM = \n" + yM);
-			Debug.LogWarning ("zM = \n" + zM);
+			//Debug.LogWarning ("yM = \n" + yM);
+			//Debug.LogWarning ("zM = \n" + zM);
 
 
 			Matrix4x4 matrix = this.transform.localToWorldMatrix * zM * targetTransform * yM;

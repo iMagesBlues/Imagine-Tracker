@@ -32,7 +32,7 @@ void LoadImageToDatabase()
 int main(int argc, const char * argv[]) {
     
 
-    //LoadImageToDatabase();
+    LoadImageToDatabase();
     
     //return 0;
         

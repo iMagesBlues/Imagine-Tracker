@@ -65,6 +65,8 @@ public class imagineARController : MonoBehaviour
 	void Start()
 	{
 		InitWebcam ();
+
+		Application.targetFrameRate = 60;
 	}
 
 	WebCamTexture webcamTexture;

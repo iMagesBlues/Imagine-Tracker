@@ -26,7 +26,14 @@ public:
          cv::Ptr<cv::DescriptorExtractor> extractor = cv::ORB::create(1000),
          cv::Ptr<cv::DescriptorMatcher>   matcher   = cv::DescriptorMatcher::create(cv::BFMatcher::BRUTEFORCE_HAMMINGLUT),
          //cv::Ptr<cv::DescriptorMatcher>   matcher   = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED),
-         bool enableRatioTest                       = true
+         bool enableRatioTest                       = true,
+         
+         
+         //KLT
+         TermCriteria m_termcrit = TermCriteria(TermCriteria::COUNT|TermCriteria::EPS,20,0.03),
+         cv::Size m_subPixWinSize = cv::Size(10,10),
+         cv::Size m_winSize       = cv::Size(31,31)
+
         );
 
     /**
@@ -44,9 +51,18 @@ public:
     TrackingInfo m_trackingInfo;
     std::vector<cv::KeyPoint> m_queryKeypoints;
     std::vector<cv::DMatch>   m_matches;
-    std::vector<cv::DMatch>   last_matches;
     cv::Mat                   m_warpedImg;
-
+    
+    
+    //KLT Tracker vars
+    std::vector<cv::DMatch> m_kltMatches;
+    std::vector<cv::KeyPoint> m_kltPoints;
+    cv::Mat m_lastImage;
+    
+    cv::TermCriteria m_termcrit;
+    cv::Size m_subPixWinSize;
+    cv::Size m_winSize;
+    cv::Mat m_mask;
 
 protected:
 
@@ -60,6 +76,9 @@ protected:
         float reprojectionThreshold,
         std::vector<cv::DMatch>& matches, 
         cv::Mat& homography);
+    
+    void computeKLT(cv::Mat image);
+    void injectKLTMatches(std::vector<KeyPoint> &queryKeypoints, std::vector<DMatch> &matches);
 
 private:
     cv::Mat                   m_queryDescriptors;
@@ -73,6 +92,7 @@ private:
     cv::Ptr<cv::FeatureDetector>     m_detector;
     cv::Ptr<cv::DescriptorExtractor> m_extractor;
     cv::Ptr<cv::DescriptorMatcher>   m_matcher;
+    
 };
 
 #endif /* Tracker_hpp */

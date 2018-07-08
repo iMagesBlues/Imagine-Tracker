@@ -15,7 +15,11 @@
 Tracker::Tracker(cv::Ptr<cv::FeatureDetector> detector,
     cv::Ptr<cv::DescriptorExtractor> extractor, 
     cv::Ptr<cv::DescriptorMatcher> matcher, 
-    bool ratioTest)
+    bool ratioTest,
+    TermCriteria m_termcrit,
+    cv::Size m_subPixWinSize,
+    cv::Size m_winSize
+    )
     : m_detector(detector)
     , m_extractor(extractor)
     , m_matcher(matcher)
@@ -57,6 +61,8 @@ bool Tracker::findPattern(const cv::Mat& image)
     // Get matches with current pattern
     getMatches(m_queryDescriptors, m_matches);
     
+    // Inject Recovered Matches from KLT prediction
+    injectKLTMatches(m_queryKeypoints, m_matches);
     
     // Find homography transformation and detect good matches
     bool homographyFound = refineMatchesWithHomography(
@@ -185,9 +191,62 @@ bool Tracker::findPattern(const cv::Mat& image)
         cout << ss.str();
     }
 
+    //use KLT to recover matches lost due to high motion
+    computeKLT(image);
+    
     return homographyFound;
 }
 
+void Tracker::injectKLTMatches(std::vector<KeyPoint> &queryKeypoints, std::vector<DMatch> &matches){
+    size_t startIndex = queryKeypoints.size();
+    for (size_t i=0; i < m_kltPoints.size(); i++)
+    {
+        queryKeypoints.push_back(m_kltPoints[i]);
+        matches.push_back(DMatch((int)(startIndex + i), m_kltMatches[i].trainIdx, m_kltMatches[i].distance));
+    }
+}
+
+void Tracker::computeKLT(cv::Mat image){
+    
+    //predict matches using KLT
+    m_kltMatches.clear();
+    m_kltPoints.clear();
+    
+    if(!m_lastImage.empty() && !m_matches.empty()){
+        std::vector<cv::Point2f> remainingPoints(m_matches.size());
+        std::vector<float> remainingSizes(m_matches.size());
+        
+        for (size_t i = 0; i < m_matches.size(); i++)
+        {
+            remainingPoints[i] = m_queryKeypoints[m_matches[i].queryIdx].pt;
+            remainingSizes[i] = m_queryKeypoints[m_matches[i].queryIdx].size;
+        }
+        std::vector<cv::Point2f> predictPoints(m_matches.size());
+        std::vector<uchar> status;
+        std::vector<float> err;
+        cv::calcOpticalFlowPyrLK(m_lastImage, image, remainingPoints, predictPoints, status, err, Size(31,31),
+                             3, TermCriteria(TermCriteria::COUNT|TermCriteria::EPS,20,0.03), 0, 0.001);
+        
+        //filter good points
+        for (size_t i=0; i < status.size(); i++)
+        {
+            if (status[i])
+            {
+                m_kltPoints.push_back(KeyPoint(predictPoints[i], remainingSizes[i]));
+                m_kltMatches.push_back(DMatch( m_matches[i].queryIdx, m_matches[i].trainIdx, m_matches[i].distance));
+            }
+        }
+        
+        cout << "predicted " << m_kltMatches.size() << " matches from klt\n";
+
+    }
+    else{
+        cout << "first frame - no klt\n";
+    }
+    
+    
+    m_lastImage = image;
+}
 
 bool Tracker::extractFeatures(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) const
 {
@@ -254,7 +313,7 @@ bool Tracker::refineMatchesWithHomography
     cv::Mat& homography
     )
 {
-    const int minNumberMatchesAllowed = 6;
+    const int minNumberMatchesAllowed = 8;
 
     if (matches.size() < minNumberMatchesAllowed)
         return false;
@@ -280,7 +339,7 @@ bool Tracker::refineMatchesWithHomography
                                     reprojectionThreshold,
                                     inliersMask,
                                     2000,
-                                    0.955);
+                                    0.965);
 
     std::vector<cv::DMatch> inliers;
     for (size_t i=0; i<inliersMask.size(); i++)
