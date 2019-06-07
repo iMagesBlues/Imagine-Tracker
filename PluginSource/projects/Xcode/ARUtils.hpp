@@ -14,7 +14,7 @@
 class ARUtils
 {
 public:
-    static const int MAX_IMAGE_SIDE = 400;
+    static const int MAX_IMAGE_SIDE = 350;
     
     static void     GetGray (cv::Mat mat, cv::Mat &outMat);
     static void     Resize  (cv::Mat mat, cv::Mat &outMat, int maxside = ARUtils::MAX_IMAGE_SIDE);

@@ -23,8 +23,8 @@ public:
      */
     Tracker
         (
-         cv::Ptr<cv::FeatureDetector>     detector  = cv::ORB::create(1000),
-         cv::Ptr<cv::DescriptorExtractor> extractor = cv::ORB::create(1000),
+         cv::Ptr<cv::FeatureDetector>     detector  = cv::ORB::create(500),
+         cv::Ptr<cv::DescriptorExtractor> extractor = cv::ORB::create(500),
          cv::Ptr<cv::DescriptorMatcher>   matcher   = cv::DescriptorMatcher::create(cv::BFMatcher::BRUTEFORCE_HAMMINGLUT),
          //cv::Ptr<cv::DescriptorMatcher>   matcher   = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED),
          bool enableRatioTest                       = true,

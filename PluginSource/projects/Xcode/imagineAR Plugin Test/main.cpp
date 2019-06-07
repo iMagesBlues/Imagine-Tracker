@@ -77,9 +77,11 @@ int main(int argc, const char * argv[]) {
             gray.copyTo(masked);
         }*/
         
+ 
         cv::drawMatches( gray, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints,
                         tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
                         vector<char>(), DrawMatchesFlags::DEFAULT );
+    
 
         if(found){            
             tracker.m_trackingInfo.computePose(imageTarget, calib);

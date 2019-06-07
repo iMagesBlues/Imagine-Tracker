@@ -239,7 +239,7 @@ bool Tracker::findPattern(const cv::Mat& image)
     //create mask roi based on current homography
     if(homographyFound)
     {
-        m_trackingInfo.maskROI = createMaskROI();
+        //m_trackingInfo.maskROI = createMaskROI();
         
         if(m_trackingInfo.homography.empty())
             best_homography.copyTo(m_trackingInfo.homography);
@@ -263,9 +263,11 @@ bool Tracker::findPattern(const cv::Mat& image)
         }
         
         
-        m_trackingInfo.maskROI = resetMaskROI();
+        //m_trackingInfo.maskROI = resetMaskROI();
         
     }
+    
+    cout << "matches count: " << m_matches.size() << ". kp size =  " << m_queryKeypoints.size() << endl;
     
     homographyFoundInLastFrame = homographyFound;
     return homographyFound;
@@ -273,11 +275,24 @@ bool Tracker::findPattern(const cv::Mat& image)
 
 void Tracker::injectKLTMatches(std::vector<KeyPoint> &queryKeypoints, std::vector<DMatch> &matches){
     size_t startIndex = queryKeypoints.size();
+    std::vector<int> lookup;
+
+    for(int i = 0; i < matches.size(); i++)
+    {
+        lookup.push_back(matches[i].trainIdx);
+    }
+    int ctr = 0;
     for (size_t i=0; i < m_kltPoints.size(); i++)
     {
-        queryKeypoints.push_back(m_kltPoints[i]);
-        matches.push_back(DMatch((int)(startIndex + i), m_kltMatches[i].trainIdx, m_kltMatches[i].distance));
+        if(std::find(lookup.begin(), lookup.end(), m_kltMatches[i].trainIdx) != lookup.end() == false)
+        {
+            queryKeypoints.push_back(m_kltPoints[i]);
+            matches.push_back(DMatch((int)(startIndex + ctr), m_kltMatches[i].trainIdx, m_kltMatches[i].distance));
+            lookup.push_back(m_kltMatches[i].trainIdx);
+            ctr++;
+        }
     }
+    cout << "injected " << ctr << " matches. ";
 }
 
 void Tracker::computeKLT(cv::Mat image){
@@ -466,8 +481,8 @@ bool Tracker::refineMatchesWithHomography
                                     CV_FM_RANSAC,
                                     reprojectionThreshold,
                                     inliersMask,
-                                    2000,
-                                    /*0.965*/0.995);
+                                    1000,
+                                    0.965);
 
     std::vector<cv::DMatch> inliers;
     for (size_t i=0; i<inliersMask.size(); i++)
