@@ -7,7 +7,7 @@
 
 #include "ARUtils.hpp"
 
-void ARUtils::GetGray(cv::Mat mat, cv::Mat &outMat)
+void ARUtils::GetGraySharp(cv::Mat mat, cv::Mat &outMat)
 {
     if (mat.channels()  == 3)
         cv::cvtColor(mat, outMat, CV_BGR2GRAY);
@@ -23,6 +23,17 @@ void ARUtils::GetGray(cv::Mat mat, cv::Mat &outMat)
     
     outMat = outMat2.clone();
 }
+
+void ARUtils::GetGray(cv::Mat mat, cv::Mat &outMat)
+{
+    if (mat.channels()  == 3)
+        cv::cvtColor(mat, outMat, CV_BGR2GRAY);
+    else if (mat.channels() == 4)
+        cv::cvtColor(mat, outMat, CV_BGRA2GRAY);
+    else if (mat.channels() == 1)
+        outMat = mat;
+}
+
 
 void ARUtils::Resize(cv::Mat mat, cv::Mat &outMat, int maxside)
 {

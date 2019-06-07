@@ -320,7 +320,7 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
         
     //process frame
     ARUtils::Resize(webcamImage, gray);
-    ARUtils::GetGray(gray, gray);
+    ARUtils::GetGraySharp(gray, gray);
     
     //track imagetarget
     bool found = tracker.findPattern(gray);

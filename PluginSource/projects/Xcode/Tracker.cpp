@@ -65,10 +65,13 @@ bool Tracker::findPattern(const cv::Mat& image)
     m_grayImg = image;
     
     
-    if(homographyFoundInLastFrame)
+    if(homographyFoundInLastFrame) //track
     {
         //warp keypoints
         std::vector<cv::KeyPoint> keypts(m_imageTarget.keypoints);
+        std::vector<DMatch> matches;
+
+        
         //get pts
         std::vector<Point2f> pts(m_imageTarget.keypoints.size());
         for(int i = 0; i < pts.size(); i++)
@@ -81,24 +84,25 @@ bool Tracker::findPattern(const cv::Mat& image)
         for(int i = 0; i < pts.size(); i++)
         {
             keypts[i].pt = pts[i];
+            matches.push_back(DMatch(i, i, 0));//fake but perfect matches
         }
         m_queryKeypoints.swap(keypts);
-        //cout << "swapped " << keypts.size() << " warped keypoints\n";
+        m_matches.swap((matches));
         
-        //get descriptors
-        m_extractor->compute(m_grayImg, m_queryKeypoints, m_queryDescriptors);
+        
     }
-    else
+    else //detect
     {
         // Extract feature points from input gray image
         extractFeaturesMasked(m_grayImg, m_queryKeypoints, m_queryDescriptors);
+        // Get matches with current pattern
+        getMatches(m_queryDescriptors, m_matches);
+        
+        // Inject Recovered Matches from KLT prediction
+        //injectKLTMatches(m_queryKeypoints, m_matches);
     }
     
-    // Get matches with current pattern
-    getMatches(m_queryDescriptors, m_matches);
     
-    // Inject Recovered Matches from KLT prediction
-    injectKLTMatches(m_queryKeypoints, m_matches);
     
     // Find homography transformation and detect good matches
     bool homographyFound = refineMatchesWithHomography(
@@ -244,30 +248,24 @@ bool Tracker::findPattern(const cv::Mat& image)
         if(m_trackingInfo.homography.empty())
             best_homography.copyTo(m_trackingInfo.homography);
         
-        cv::accumulateWeighted(best_homography, m_trackingInfo.homography, 1);
-        lostCtr = 0;
+        //negative feedback;
+        //cv::accumulateWeighted(best_homography, m_trackingInfo.homography, 0.9);
+        
+        Mat error = best_homography - m_trackingInfo.homography;
+        m_trackingInfo.homography = best_homography - 0.1 * m_trackingInfo.homography;
         
         //use KLT to recover matches lost due to high motion
-        computeKLT(image);
+        //computeKLT(image);
     }
     else
     {
-        //wait a few frames before homography disappears
-        lostCtr += 1;
-        if(lostCtr < 1){
-            homographyFound = true;
-            computeKLT(image);
-        }
-        else{
-            resetKLT();
-        }
-        
+        resetKLT();
         
         //m_trackingInfo.maskROI = resetMaskROI();
         
     }
     
-    cout << "matches count: " << m_matches.size() << ". kp size =  " << m_queryKeypoints.size() << endl;
+    //cout << "matches count: " << m_matches.size() << ". kp size =  " << m_queryKeypoints.size() << endl;
     
     homographyFoundInLastFrame = homographyFound;
     return homographyFound;

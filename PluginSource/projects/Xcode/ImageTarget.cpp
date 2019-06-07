@@ -21,7 +21,7 @@ int ImageTarget::BuildFromImage(const Mat& scaledImage, string imgName){
     name = imgName;
     image = scaledImage.clone();
     size = Size(image.cols, image.rows);
-    ARUtils::GetGray(image, grayImg);
+    ARUtils::GetGraySharp(image, grayImg);
     
     points2d.resize(4);
     points3d.resize(4);
@@ -50,7 +50,7 @@ int ImageTarget::BuildFromImage(const Mat& scaledImage, string imgName){
     points3d[3] = cv::Point3f(-unitW,  unitH, 0);
     
     //detect keypoints
-    Ptr<FeatureDetector> detector  = ORB::create(1000);
+    Ptr<FeatureDetector> detector  = ORB::create(500);
     detector->detectAndCompute(grayImg, noArray(), keypoints, descriptors);
     
     if(keypoints.size() <= 0){

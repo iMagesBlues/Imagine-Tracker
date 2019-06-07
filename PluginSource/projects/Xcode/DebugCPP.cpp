@@ -56,6 +56,7 @@ void Debug::Log(std::stringstream &ss, Color color){
 }
 
 void Debug::send_log(const std::stringstream &ss, const Color &color) {
+    return;
     const std::string tmp = ss.str();
     const char* tmsg = tmp.c_str();
     if (callbackInstance != nullptr)
