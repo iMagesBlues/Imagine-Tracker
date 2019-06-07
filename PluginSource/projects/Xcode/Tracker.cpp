@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <cassert>
 #include "DebugCPP.hpp"
+#include "ARUtils.hpp"
 
 Tracker::Tracker(cv::Ptr<cv::FeatureDetector> detector,
     cv::Ptr<cv::DescriptorExtractor> extractor, 
@@ -27,6 +28,12 @@ Tracker::Tracker(cv::Ptr<cv::FeatureDetector> detector,
     , enableHomographyRefinement(true)
     , homographyReprojectionThreshold(15)
 {
+    minNumberMatchesAllowed = 5;
+    lostCtr = 1;
+    enableSecondHomographyRefinement = true;
+    homographyFoundInLastFrame = false;
+    homographyRefined = false;
+    homographyRefinedTwice = false;
 }
 
 
@@ -52,11 +59,40 @@ void Tracker::train(const ImageTarget& imageTarget)
 
 
 bool Tracker::findPattern(const cv::Mat& image)
-{
+{    
+    Mat best_homography;
+    
     m_grayImg = image;
     
-    // Extract feature points from input gray image
-    extractFeatures(m_grayImg, m_queryKeypoints, m_queryDescriptors);
+    
+    if(homographyFoundInLastFrame)
+    {
+        //warp keypoints
+        std::vector<cv::KeyPoint> keypts(m_imageTarget.keypoints);
+        //get pts
+        std::vector<Point2f> pts(m_imageTarget.keypoints.size());
+        for(int i = 0; i < pts.size(); i++)
+        {
+            pts[i] = keypts[i].pt;
+        }
+        //warp
+        perspectiveTransform(pts, pts, m_trackingInfo.homography);
+        //set pts
+        for(int i = 0; i < pts.size(); i++)
+        {
+            keypts[i].pt = pts[i];
+        }
+        m_queryKeypoints.swap(keypts);
+        //cout << "swapped " << keypts.size() << " warped keypoints\n";
+        
+        //get descriptors
+        m_extractor->compute(m_grayImg, m_queryKeypoints, m_queryDescriptors);
+    }
+    else
+    {
+        // Extract feature points from input gray image
+        extractFeaturesMasked(m_grayImg, m_queryKeypoints, m_queryDescriptors);
+    }
     
     // Get matches with current pattern
     getMatches(m_queryDescriptors, m_matches);
@@ -77,7 +113,7 @@ bool Tracker::findPattern(const cv::Mat& image)
     {
 
         // If homography refinement enabled improve found transformation
-        if (enableHomographyRefinement)
+        if (enableHomographyRefinement)// && !homographyRefined)
         {
             // Warp image using found homography
             cv::warpPerspective(m_grayImg, m_warpedImg, m_roughHomography, m_imageTarget.size, cv::WARP_INVERSE_MAP | cv::INTER_CUBIC);
@@ -91,6 +127,13 @@ bool Tracker::findPattern(const cv::Mat& image)
 
             // Match with pattern
             getMatches(m_queryDescriptors, refinedMatches);
+            /*Size size1 = Size(m_grayImg.cols, m_grayImg.rows);
+            getGMSMatches(size1,
+                          m_imageTarget.size,
+                          m_queryKeypoints,
+                          m_imageTarget.keypoints,
+                          m_queryDescriptors,
+                          refinedMatches);*/
 
             // Estimate new refinement homography
             homographyFound = refineMatchesWithHomography(
@@ -101,12 +144,13 @@ bool Tracker::findPattern(const cv::Mat& image)
                 m_refinedHomography);
             
             
-            if(!m_refinedHomography.empty())
+            if(!m_refinedHomography.empty() && enableSecondHomographyRefinement)// && !homographyRefinedTwice)
             {
+                homographyRefined = true;
                 
                 //use second warp
                 
-                Mat m_warpedImg2, m_refinedHomography2;
+                Mat m_refinedHomography2;
                 // Warp image using found homography
                 cv::warpPerspective(m_warpedImg, m_warpedImg2, m_refinedHomography, m_imageTarget.size, cv::WARP_INVERSE_MAP | cv::INTER_CUBIC);
                 
@@ -119,6 +163,13 @@ bool Tracker::findPattern(const cv::Mat& image)
                 
                 // Match with pattern
                 getMatches(m_queryDescriptors, refinedMatches2);
+                /*Size size1 = Size(m_grayImg.cols, m_grayImg.rows);
+                getGMSMatches(size1,
+                              m_imageTarget.size,
+                              m_queryKeypoints,
+                              m_imageTarget.keypoints,
+                              m_queryDescriptors,
+                              refinedMatches2);*/
                 
                 // Estimate new refinement homography
                 homographyFound = refineMatchesWithHomography(
@@ -129,71 +180,94 @@ bool Tracker::findPattern(const cv::Mat& image)
                                                               m_refinedHomography2);
                 if(!m_refinedHomography2.empty())
                 {
+                    homographyRefinedTwice = true;
+                    //don't use third warp because it's expensive
                     // Get a result homography as result of matrix product of refined and rough homographies:
-                    m_trackingInfo.homography = m_roughHomography * m_refinedHomography * m_refinedHomography2;
+                    best_homography = m_roughHomography * m_refinedHomography * m_refinedHomography2;
                     
-                    stringstream ss;
-                    ss << "homography second refinement successful " << std::to_string(refinedMatches2.size()) << endl;
-                    Debug::Log(ss);
-                    cout << ss.str();
                     
                     
                     // Transform contour with precise homography
-                    cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, m_trackingInfo.homography);
+                    cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, best_homography);
                 }
                 else
                 {
-                
-                // Get a result homography as result of matrix product of refined and rough homographies:
-                m_trackingInfo.homography = m_roughHomography * m_refinedHomography;
-                m_warpedImg = m_warpedImg2;
+                    homographyRefinedTwice = false;
                     
-                stringstream ss;
-                ss << "homography refinement successful " << std::to_string(refinedMatches.size()) << endl;
-                Debug::Log(ss);
-                cout << ss.str();
-             
+                    // Get a result homography as result of matrix product of refined and rough homographies:
+                    best_homography = m_roughHomography * m_refinedHomography;
+                    m_warpedImg = m_warpedImg2;
+                    
+                 
 
-                // Transform contour with precise homography
-                cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, m_trackingInfo.homography);
+                    // Transform contour with precise homography
+                    cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, best_homography);
                 }
             }
             else
             {
-                stringstream ss;
-                ss << "homography refinement failed " << std::to_string(m_matches.size()) << endl;
-                Debug::Log(ss);
-                cout << ss.str();
+                homographyRefined = false;
                 
-                m_trackingInfo.homography = m_roughHomography;
+                best_homography = m_roughHomography;
                 // Transform contour with precise homography
-                cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, m_trackingInfo.homography);
+                cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, best_homography);
             }
         }
         else
         {
-            m_trackingInfo.homography = m_roughHomography;
+            best_homography = m_roughHomography;
 
             // Transform contour with rough homography
             cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, m_roughHomography);
-            
-            stringstream ss;
-            ss << "homography found " << std::to_string(m_matches.size()) << endl;
-            Debug::Log(ss);
-            cout << ss.str();
-        }        
+        
+        }
+        
+        
+
     }
     else
     {
-        stringstream ss;
-        ss << "homography not found " << std::to_string(m_matches.size()) << endl;
-        Debug::Log(ss);
-        cout << ss.str();
+        
+        //stringstream ss;
+        //ss << "homography not found " << std::to_string(m_matches.size()) << endl;
+        //Debug::Log(ss);
+        //cout << ss.str();
     }
 
-    //use KLT to recover matches lost due to high motion
-    computeKLT(image);
     
+    
+    //create mask roi based on current homography
+    if(homographyFound)
+    {
+        m_trackingInfo.maskROI = createMaskROI();
+        
+        if(m_trackingInfo.homography.empty())
+            best_homography.copyTo(m_trackingInfo.homography);
+        
+        cv::accumulateWeighted(best_homography, m_trackingInfo.homography, 1);
+        lostCtr = 0;
+        
+        //use KLT to recover matches lost due to high motion
+        computeKLT(image);
+    }
+    else
+    {
+        //wait a few frames before homography disappears
+        lostCtr += 1;
+        if(lostCtr < 1){
+            homographyFound = true;
+            computeKLT(image);
+        }
+        else{
+            resetKLT();
+        }
+        
+        
+        m_trackingInfo.maskROI = resetMaskROI();
+        
+    }
+    
+    homographyFoundInLastFrame = homographyFound;
     return homographyFound;
 }
 
@@ -234,18 +308,25 @@ void Tracker::computeKLT(cv::Mat image){
             {
                 m_kltPoints.push_back(KeyPoint(predictPoints[i], remainingSizes[i]));
                 m_kltMatches.push_back(DMatch( m_matches[i].queryIdx, m_matches[i].trainIdx, m_matches[i].distance));
+                
             }
         }
         
-        cout << "predicted " << m_kltMatches.size() << " matches from klt\n";
+        //cout << "predicted " << m_kltMatches.size() << " matches from klt\n";
 
     }
     else{
-        cout << "first frame - no klt\n";
+        //cout << "first frame - no klt\n";
     }
     
     
     m_lastImage = image;
+}
+
+void Tracker::resetKLT(){
+    m_kltMatches.clear();
+    m_kltPoints.clear();
+    m_matches.clear();
 }
 
 bool Tracker::extractFeatures(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) const
@@ -253,8 +334,8 @@ bool Tracker::extractFeatures(const cv::Mat& image, std::vector<cv::KeyPoint>& k
     assert(!image.empty());
     assert(image.channels() == 1);
 
-    //TODO:use detect and compute with mask to eliminate keypoints outside
     m_detector->detect(image, keypoints);
+
     if (keypoints.empty())
         return false;
     
@@ -262,6 +343,23 @@ bool Tracker::extractFeatures(const cv::Mat& image, std::vector<cv::KeyPoint>& k
     if (keypoints.empty())
         return false;
 
+    return true;
+}
+
+bool Tracker::extractFeaturesMasked(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) const
+{
+    assert(!image.empty());
+    assert(image.channels() == 1);
+    
+    m_detector->detect(image, keypoints, m_trackingInfo.maskROI);
+    
+    if (keypoints.empty())
+        return false;
+    
+    m_extractor->compute(image, keypoints, descriptors);
+    if (keypoints.empty())
+        return false;
+    
     return true;
 }
 
@@ -278,7 +376,8 @@ void Tracker::getMatches(const cv::Mat& queryDescriptors, std::vector<cv::DMatch
         const float minRatio = 1.f / 1.5f;
         
         // KNN match will return 2 nearest matches for each query descriptor
-        m_matcher->knnMatch(queryDescriptors, m_knnMatches, 2);
+        //m_matcher->knnMatch(queryDescriptors, m_knnMatches, 2);
+        m_matcher->knnMatch(queryDescriptors, m_imageTarget.descriptors, m_knnMatches, 2);
 
         for (size_t i=0; i<m_knnMatches.size(); i++)
         {
@@ -301,6 +400,31 @@ void Tracker::getMatches(const cv::Mat& queryDescriptors, std::vector<cv::DMatch
         // Perform regular match
         m_matcher->match(queryDescriptors, matches);
     }
+    
+//    stringstream ss;
+//    ss << "found " << matches.size() << " matches";
+//    Debug::Log(ss, Color::Yellow);
+
+}
+
+void Tracker::getGMSMatches(Size& size1, Size& size2, std::vector<cv::KeyPoint>& kpts1, std::vector<cv::KeyPoint>& kpts2, cv::Mat& queryDescriptors, std::vector<cv::DMatch>& matches)
+{
+    matches.clear();
+    //m_knnMatches.clear();
+    std::vector<cv::DMatch> matchesGMS;
+
+    m_matcher->match(queryDescriptors, matches);
+    cv::xfeatures2d::matchGMS(size1,
+                              size2,
+                              kpts1,
+                              kpts2,
+                              matches,
+                              matchesGMS,
+                              true,
+                              true,
+                              6.0);
+    
+    matches.swap(matchesGMS);
 }
 
 
@@ -313,10 +437,14 @@ bool Tracker::refineMatchesWithHomography
     cv::Mat& homography
     )
 {
-    const int minNumberMatchesAllowed = 8;
+    //const int minNumberMatchesAllowed = 4;
 
-    if (matches.size() < minNumberMatchesAllowed)
+    if (matches.size() < 3)
+    {
+        minNumberMatchesAllowed = 3;
         return false;
+    }
+    
     
     if(queryKeypoints.size() <= 0)
         return false;
@@ -339,7 +467,7 @@ bool Tracker::refineMatchesWithHomography
                                     reprojectionThreshold,
                                     inliersMask,
                                     2000,
-                                    0.965);
+                                    /*0.965*/0.995);
 
     std::vector<cv::DMatch> inliers;
     for (size_t i=0; i<inliersMask.size(); i++)
@@ -349,5 +477,39 @@ bool Tracker::refineMatchesWithHomography
     }
 
     matches.swap(inliers);
+    
+    if(matches.size() > 4)
+    {
+        minNumberMatchesAllowed = matches.size() - 1;
+    }
+    
     return matches.size() > minNumberMatchesAllowed;
+}
+
+cv::Mat Tracker::createMaskROI()
+{
+    Size size = Size(m_grayImg.cols, m_grayImg.rows);
+    Mat mask = Mat::zeros(size, CV_8UC1);
+    
+    //quad mask
+    vector<Point> ROI_Poly;
+    approxPolyDP(m_trackingInfo.points2d, ROI_Poly, 1.0, true);
+    fillConvexPoly(mask, &ROI_Poly[0], ROI_Poly.size(), 255, 8, 0);
+    
+    //dots mask
+//    for(int i = 0; i < m_matches.size(); i++)
+//    {
+//        Point p = m_queryKeypoints[ m_matches[i].queryIdx].pt;
+//        cv::circle(mask, p, 3, Scalar(255, 255, 255), CV_FILLED, 8, 0);
+//    }
+    
+    return mask;
+}
+
+cv::Mat Tracker::resetMaskROI()
+{
+    Size size = Size(m_grayImg.cols, m_grayImg.rows);
+    Mat mask = Mat::zeros(size, CV_8UC1);
+    mask = cv::Scalar(255, 255, 255);
+    return mask;
 }

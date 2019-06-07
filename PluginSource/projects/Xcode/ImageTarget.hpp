@@ -46,6 +46,7 @@ struct TrackingInfo
     
     bool                      found = false;
     cv::Mat                   homography;
+    cv::Mat                   maskROI;
     std::vector<cv::Point2f>  points2d;
     Transformation            pose3d;
     

@@ -9,6 +9,11 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
+		<key>iARTracker.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
 		<key>imagineAR Plugin Test.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -18,6 +23,11 @@
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>2AD4A85520BFC1080050E4A0</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>2AFB639822A7533D00569A98</key>
 		<dict>
 			<key>primary</key>
 			<true/>

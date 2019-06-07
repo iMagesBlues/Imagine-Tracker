@@ -7,11 +7,11 @@
 #include <math.h>
 #include <vector>
 
-#include <glew.h>
+#include "glew.h"
 #include <opencv2/opencv.hpp>
-#include <DebugCPP.hpp>
-#include <ImageTarget.hpp>
-#include <Tracker.hpp>
+#include "DebugCPP.hpp"
+#include "ImageTarget.hpp"
+#include "Tracker.hpp"
 #include "ARUtils.hpp"
 
 
@@ -58,11 +58,13 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API OpenWebcam(int* w, in
     *w = webcamImage.cols;
     *h = webcamImage.rows;
     
-    
-    trainImg = cv::imread("trainImg.jpg");
-    ARUtils::Resize(trainImg, trainImg);
+    /*stringstream ss;
+    ss << "init train imagetarget name: " << imageTarget.name << ".jpg\n";
+    Debug::Log(ss);
+    trainImg = cv::imread("Assets/Imagetargets/" + imageTarget.name + ".jpg");
+    ARUtils::Resize(trainImg, trainImg);*/
+     
     Size min = ARUtils::GetScaledSize(Size(webcamImage.cols, webcamImage.rows));
-    
     cameraCalibration =  CameraCalibration(min.width, min.width, min.width / 2, min.height / 2);
 
     
@@ -72,7 +74,7 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API OpenWebcam(int* w, in
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API CloseWebcam()
 {
     cap.release();
-    
+    Debug::Log("Video capture released");
     return;
 }
 //--------------------------------------------------
@@ -90,8 +92,10 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetWebcamTexture(void
 
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API DebugShowTexture()
 {
+    cv::Mat gray2;
+    gray.copyTo(gray2);
     
-    cv::drawMatches( gray, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints,
+    cv::drawMatches( gray2, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints,
                     tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
                     vector<char>(), DrawMatchesFlags::DEFAULT );
     
@@ -103,8 +107,11 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API DebugShowTexture()
     
     cv::imshow("Debug", debugMatches);
     
-    if(!tracker.m_warpedImg.empty())
-        cv::imshow("warped", tracker.m_warpedImg);
+    /*if(!tracker.m_warpedImg.empty())
+        cv::imshow("warped", tracker.m_warpedImg)*/;
+
+    ////
+    
     
 }
 
@@ -131,12 +138,34 @@ extern "C" int UNITY_INTERFACE_API BuildImageTargetDatabase(Color32* img, int wi
 }
 extern "C" int UNITY_INTERFACE_EXPORT InitImageTarget(const char* imgName){
 
+    ////////////////
+    cv::Mat img;
+    stringstream ss1;
+    ss1 <<"Assets/Imagetargets/" << imgName << ".jpg";
+    img = cv::imread(ss1.str());
+    
+    ARUtils::Resize(img, img);
+    
+    ImageTarget imagetarget;
+    imagetarget.BuildFromImage(img, imgName);
+    imagetarget.ExportDatabase();
+    ///////////////
+    
     imageTarget.ImportDatabase(imgName);
     
     Debug::Log("imported imagetarget data");
     Debug::Log(imageTarget.descriptors.rows);
     Debug::Log(imageTarget.descriptors.cols);
-
+    
+    stringstream ss;
+    ss << "Assets/Imagetargets/" << imgName << ".jpg";
+    Debug::Log(ss);
+    trainImg = cv::imread(ss.str());
+    ARUtils::Resize(trainImg, trainImg);
+    
+    tracker.train(imageTarget);
+    Debug::Log("init tracker done");
+    
     return 0;
 }
 
@@ -288,7 +317,7 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 		return;
     
 	RenderWebcamTexture();
-    
+        
     //process frame
     ARUtils::Resize(webcamImage, gray);
     ARUtils::GetGray(gray, gray);

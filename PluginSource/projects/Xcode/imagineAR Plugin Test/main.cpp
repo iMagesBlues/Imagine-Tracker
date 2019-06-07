@@ -23,21 +23,19 @@ void LoadImageToDatabase()
     ARUtils::Resize(img, img);
     
     ImageTarget imagetarget;
-    imagetarget.BuildFromImage(img, "pandatest");
+    imagetarget.BuildFromImage(img, "panda");
     imagetarget.ExportDatabase();
 }
 
 
-
 int main(int argc, const char * argv[]) {
     
-
     LoadImageToDatabase();
     
     //return 0;
         
     ImageTarget imageTarget;
-    imageTarget.ImportDatabase("pandatest");
+    imageTarget.ImportDatabase("panda");
     cout << "imagetarget imported with " << std::to_string(imageTarget.keypoints.size()) + " keypoints" << endl;
     
     Tracker tracker;
@@ -53,7 +51,7 @@ int main(int argc, const char * argv[]) {
     cv::namedWindow("warped");
     
     cv::Mat trainImg;
-    trainImg = cv::imread("trainImg.jpg");
+    trainImg = cv::imread("panda.jpg");
     ARUtils::Resize(trainImg, trainImg);
     
     Mat webcamImage;
@@ -63,7 +61,7 @@ int main(int argc, const char * argv[]) {
     
     for(;;)
     {
-        cv::Mat frame, small, gray, debugMatches;
+        cv::Mat frame, small, gray, debugMatches, masked, mask;
         cap >> frame;
 
         ARUtils::Resize(frame, small);
@@ -71,20 +69,39 @@ int main(int argc, const char * argv[]) {
 
         bool found = tracker.findPattern(gray);
         
+        /*if(!tracker.m_trackingInfo.maskROI.empty())
+        {
+            gray.copyTo(masked, tracker.m_trackingInfo.maskROI);
+        }
+        else{
+            gray.copyTo(masked);
+        }*/
+        
         cv::drawMatches( gray, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints,
-                    tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
-                    vector<char>(), DrawMatchesFlags::DEFAULT );
+                        tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
+                        vector<char>(), DrawMatchesFlags::DEFAULT );
 
-        if(found){
-            
+        if(found){            
             tracker.m_trackingInfo.computePose(imageTarget, calib);
+            
+            //show masked region
+            
+            
+            //show outline
             tracker.m_trackingInfo.draw2dContour(debugMatches, Scalar(0,255,255));
+            //show axes
             tracker.m_trackingInfo.showAxes(calib, tracker.m_trackingInfo.pose3d, debugMatches);
+        
+            
         }
         
+        
+        
         cv::imshow("vid", debugMatches);
-        if(!tracker.m_warpedImg.empty())
-            cv::imshow("warped", tracker.m_warpedImg);
+        
+        if(!tracker.m_trackingInfo.maskROI.empty())
+            cv::imshow("warped", tracker.m_trackingInfo.maskROI);
+        //TODO: Kalman homography
 
         if(waitKey(30) >= 0) break;
     }

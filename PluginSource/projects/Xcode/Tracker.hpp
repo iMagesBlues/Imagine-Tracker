@@ -12,6 +12,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/xfeatures2d.hpp>
 
 
 class Tracker
@@ -42,9 +43,17 @@ public:
     void train(const ImageTarget& imageTarget);
     
     bool findPattern(const cv::Mat& image);
+    cv::Mat createMaskROI();
+    cv::Mat resetMaskROI();
+    float lostCtr;
 
     bool enableRatioTest;
     bool enableHomographyRefinement;
+    bool enableSecondHomographyRefinement;
+    bool homographyFoundInLastFrame;
+    bool homographyRefined;
+    bool homographyRefinedTwice;
+
     float homographyReprojectionThreshold;
     
     //exposed for debugging
@@ -52,8 +61,9 @@ public:
     std::vector<cv::KeyPoint> m_queryKeypoints;
     std::vector<cv::DMatch>   m_matches;
     cv::Mat                   m_warpedImg;
-    
-    
+    cv::Mat                   m_warpedImg2;
+    cv::Mat                   m_warpedImg3;
+        
     //KLT Tracker vars
     std::vector<cv::DMatch> m_kltMatches;
     std::vector<cv::KeyPoint> m_kltPoints;
@@ -63,14 +73,25 @@ public:
     cv::Size m_subPixWinSize;
     cv::Size m_winSize;
     cv::Mat m_mask;
+    
+    int minNumberMatchesAllowed;
 
 protected:
 
     bool extractFeatures(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) const;
+    
+    bool extractFeaturesMasked(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) const;
 
     void getMatches(const cv::Mat& queryDescriptors, std::vector<cv::DMatch>& matches);
+    void getGMSMatches(Size& size1,
+                       Size& size2,
+                       std::vector<cv::KeyPoint>& kpts1,
+                       std::vector<cv::KeyPoint>& kpts2,
+                       cv::Mat& descriptors,
+                       std::vector<cv::DMatch>& matches
+                       );
     
-    static bool refineMatchesWithHomography(
+    bool refineMatchesWithHomography(
         const std::vector<cv::KeyPoint>& queryKeypoints, 
         const std::vector<cv::KeyPoint>& trainKeypoints, 
         float reprojectionThreshold,
@@ -78,8 +99,12 @@ protected:
         cv::Mat& homography);
     
     void computeKLT(cv::Mat image);
-    void injectKLTMatches(std::vector<KeyPoint> &queryKeypoints, std::vector<DMatch> &matches);
+    void resetKLT();
 
+    void injectKLTMatches(std::vector<KeyPoint> &queryKeypoints, std::vector<DMatch> &matches);
+    void injectWarpedMatches(std::vector<KeyPoint> &queryKeypoints, std::vector<DMatch> &matches);
+
+    
 private:
     cv::Mat                   m_queryDescriptors;
     std::vector< std::vector<cv::DMatch> > m_knnMatches;

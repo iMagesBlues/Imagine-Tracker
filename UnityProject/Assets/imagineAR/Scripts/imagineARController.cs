@@ -97,7 +97,7 @@ public class imagineARController : MonoBehaviour
 
 		//Initialize Imagetarget
 		Initialize();
-		Train ();
+		//Train ();
 
 		updatePlugin = true;
 		//StartCoroutine ("UpdateRoutine");
@@ -123,6 +123,7 @@ public class imagineARController : MonoBehaviour
 	}
 		
 	void OnDisable(){
+        Debug.Log("Closing Webcam...");
 		CloseWebcam ();
 	}
 
@@ -142,7 +143,7 @@ public class imagineARController : MonoBehaviour
 			);
 		}
 
-		byte[] data = new byte[size];
+		/*byte[] data = new byte[size];
 		Array.Copy (buffer, data, size);
 
 		Debug.Log ("Received data[" + data.Length + "] with bytes = " + size + " ");
@@ -154,22 +155,22 @@ public class imagineARController : MonoBehaviour
 		}
 
 		string path = directory + fileName;
-		File.WriteAllBytes (path, data);
+		File.WriteAllBytes (path, data);*/
 	}
 
 	public unsafe void Initialize(){
-		byte[] data = database.bytes;
+		//byte[] data = database.bytes;
 
-		Debug.Log ("Init " + database.name);
+		//Debug.Log ("Init " + database.name);
 
 		//Pin Memory
-		fixed (byte* d = data) {
-			InitImageTarget (database.name);
-		}
+		//fixed (byte* d = data) {
+			InitImageTarget (image.name);
+		//}
 	}
 
 	public void TrainTracker(){
-		Train ();
+		//Train ();
 	}
 
 	[MonoPInvokeCallback(typeof(imageTargetTrackedCallback))]

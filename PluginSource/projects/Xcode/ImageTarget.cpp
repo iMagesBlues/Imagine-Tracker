@@ -72,24 +72,34 @@ int ImageTarget::BuildFromImage(const Mat& scaledImage, string imgName){
 void ImageTarget::ExportDatabase()
 {
     
-    cv::FileStorage file(name + ".xml", cv::FileStorage::WRITE);
+    cv::FileStorage file("Assets/Imagetargets/" + name + ".xml", cv::FileStorage::WRITE);
     cv::write(file, "size", size);
     cv::write(file, "keypoints", keypoints);
     cv::write(file, "descriptors", descriptors);
     
-    Debug::Log("file save complete");
+    
+    stringstream ss;
+    ss << "file save complete: " << name << endl;
+    Debug::Log(ss);
+    //cout << ss.str();
+    //Debug::Log("file save complete");
     file.release();
 }
 
 void ImageTarget::ImportDatabase(string imgName)
 {
-    
     name = imgName;
+    stringstream ss;
+    ss << "importing db: " << imgName << endl;
+    Debug::Log(ss);
     
-    cv::FileStorage file(name + ".xml", cv::FileStorage::READ);
+    cv::FileStorage file("Assets/Imagetargets/" + name + ".xml", cv::FileStorage::READ);
 
     cv::FileNode sizeNode = file["size"];
     cv::read(sizeNode, size, Size(0,0));
+    ss.clear();
+    ss << "size [" << size.width << ", " << size.height << "]\n";
+    Debug::Log(ss);
     
     cv::FileNode keypointsNode = file["keypoints"];
     cv::read(keypointsNode, keypoints);
@@ -190,8 +200,8 @@ void TrackingInfo::computePose(const ImageTarget& imageTarget, const CameraCalib
     cv::Mat_<float> rotMat(3,3);
     cv::Rodrigues(Rvec, rotMat);
     
-    cout << "Tvec = "<< endl << " "  << Tvec << endl << endl;
-    cout << "rotMat = "<< endl << " "  << rotMat << endl << endl;
+    //cout << "Tvec = "<< endl << " "  << Tvec << endl << endl;
+    //cout << "rotMat = "<< endl << " "  << rotMat << endl << endl;
 
     
     // Copy to transformation matrix

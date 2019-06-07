@@ -15,6 +15,13 @@ void ARUtils::GetGray(cv::Mat mat, cv::Mat &outMat)
         cv::cvtColor(mat, outMat, CV_BGRA2GRAY);
     else if (mat.channels() == 1)
         outMat = mat;
+    
+    //effective but slow
+    cv::Mat outMat2;
+    cv::GaussianBlur(outMat, outMat2, cv::Size(0, 0), 3);
+    cv::addWeighted(outMat, 4, outMat2, -3, 0, outMat2);
+    
+    outMat = outMat2.clone();
 }
 
 void ARUtils::Resize(cv::Mat mat, cv::Mat &outMat, int maxside)
