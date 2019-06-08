@@ -2,23 +2,82 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public class KalmanFilterPos
+{
+    private Vector3 A, H, Q, R, P, x;
+
+    public KalmanFilterPos(Vector3 A, Vector3 H, Vector3 Q, Vector3 R, Vector3 initial_P, Vector3 initial_x)
+    {
+        this.A = A;
+        this.H = H;
+        this.Q = Q;
+        this.R = R;
+        this.P = initial_P;
+        this.x = initial_x;
+    }
+
+    public Vector3 Output(Vector3 input)
+    {
+        // time update - prediction
+        x = Mul(A, x);//A * x;
+        P = Mul( Mul(A, P), A) + Q;// A * P * A + Q;
+
+        // measurement update - correction
+        Vector3 K = Div(Mul(P, H),  Mul(Mul(H, P), H) + R);//P * H / (H * P * H + R);
+        x = Mul(x + K, (input - Mul(H,x)));
+        //P = (1 - K * H) * P;
+        P = Mul(One - Mul(K, H), P);
+        return x;
+    }
+
+    Vector3 Mul(Vector3 a, Vector3 b)
+    {
+        return (Vector3.Scale(a, b));
+    }
+    Vector3 Div(Vector3 a, Vector3 b)
+    {
+        return new Vector3(a.x / b.x, a.y / b.y, a.x / b.x);
+    }
+    Vector3 One{
+        get{
+            return Vector3.one;
+        }
+    }
+}
+
 public class ImageTarget : MonoBehaviour {
 
 	public Texture2D texture;
 	public TextAsset database;
 	public float width, height;
+    KalmanFilterPos kalmanPos;
+    KalmanFilterPos kalmanRot;
 
-	// Use this for initialization
-	void Start () {
-		//CreateMesh ();
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
-	public void CreateMesh(){
+    // Use this for initialization
+    void Start () {
+        //CreateMesh ();
+        kalmanPos = new KalmanFilterPos(One, One, .125f*One, One, 0.1f*One, transform.localPosition);
+        kalmanPos = new KalmanFilterPos(One, One, .125f * One, One, 0.1f * One, transform.localEulerAngles);
+
+    }
+
+    // Update is called once per frame
+    void Update () {
+        transform.localPosition = kalmanPos.Output(transform.localPosition);
+        transform.localEulerAngles = kalmanPos.Output(transform.localEulerAngles);
+
+    }
+
+    Vector3 One
+    {
+        get
+        {
+            return Vector3.one;
+        }
+    }
+
+    public void CreateMesh(){
 
 		// You can change that line to provide another MeshFilter
 		MeshFilter filter = gameObject.AddComponent< MeshFilter >();

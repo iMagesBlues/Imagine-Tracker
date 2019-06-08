@@ -174,25 +174,19 @@ void TrackingInfo::computePose(const ImageTarget& imageTarget, const CameraCalib
 {
     cv::Mat Rvec;
     cv::Mat_<float> Tvec;
-    cv::Mat raux,taux;
+    cv::Mat raux = (Mat_<double>(3,1));
+    cv::Mat taux = (Mat_<double>(3,1));
+
+
     
-//    std::vector<cv::Point2f>  scaledpoints2d;
-//
-//    scaledpoints2d.resize(4);
-//
-//    std::stringstream debug;
-//    debug << "points2d = \n";
-//    for(int i = 0; i < 4; i++){
-//        scaledpoints2d[i].x = points2d[i].x * 4.26; //scale up to compensate for scaling down
-//        scaledpoints2d[i].y = points2d[i].y * 4.26; //scale up to compensate for scaling down
-//
-//        debug << "(" + to_string(scaledpoints2d[i].x) + "," + to_string(scaledpoints2d[i].y) + ")\n";
-//    }
-//    cout << debug.str();
+    //cout << "rsize:" << raux.size << ", tsize:" <<taux.size;
     
-    cv::solvePnP(imageTarget.points3d, points2d, calibration.getIntrinsic(), calibration.getDistorsion(),raux,taux);
+    cv::solvePnP(imageTarget.points3d, points2d, calibration.getIntrinsic(), calibration.getDistorsion(), raux, taux, false, SOLVEPNP_ITERATIVE);
     raux.convertTo(Rvec,CV_32F);
     taux.convertTo(Tvec ,CV_32F);
+    
+    //Tvec = pos
+    //Rvec = rot
     
     pose3d.Rvec = Rvec;
     pose3d.Tvec = Tvec;
@@ -201,7 +195,7 @@ void TrackingInfo::computePose(const ImageTarget& imageTarget, const CameraCalib
     cv::Rodrigues(Rvec, rotMat);
     
     //cout << "Tvec = "<< endl << " "  << Tvec << endl << endl;
-    //cout << "rotMat = "<< endl << " "  << rotMat << endl << endl;
+    //cout << "RVec = "<< endl << " "  << Rvec << endl << endl;
 
     
     // Copy to transformation matrix
@@ -217,4 +211,205 @@ void TrackingInfo::computePose(const ImageTarget& imageTarget, const CameraCalib
     
     // Since solvePnP finds camera location, w.r.t to marker pose, to get marker pose w.r.t to the camera we invert it.
     //pose3d = pose3d.getInverted();
+    
 }
+
+
+void TrackingInfo::predictKalman(){
+    
+    double dT = (kf_tick - kf_lastTick) / getTickFrequency();
+    
+    kf.transitionMatrix.at<float>(3) = dT;
+    kf.transitionMatrix.at<float>(16) = dT;
+    kf.transitionMatrix.at<float>(29) = dT;
+    kf.transitionMatrix.at<float>(81) = dT;
+    kf.transitionMatrix.at<float>(94) = dT;
+    kf.transitionMatrix.at<float>(107) = dT;
+    //dT's at 3, 16, 29, 81, 94, 107
+    
+    //cout << "dT: " << dT << endl;
+    kf_state = kf.predict();
+    
+    //project points from prediction
+    cv::Mat kf_tvec = Mat_<float>(3,1);
+    kf_tvec.at<float>(0) = kf_state.at<float>(0);
+    kf_tvec.at<float>(1) = kf_state.at<float>(1);
+    kf_tvec.at<float>(2) = kf_state.at<float>(2);
+    
+    cv::Mat kf_rvec = Mat_<float>(3,1);
+    kf_rvec.at<float>(0) = kf_state.at<float>(6);
+    kf_rvec.at<float>(1) = kf_state.at<float>(7);
+    kf_rvec.at<float>(2) = kf_state.at<float>(8);
+    
+    cout << pose3d.Tvec.at<float>(0) << " = " << kf_tvec.at<float>(0) << endl;
+    //cout << pose3d.Rvec << " : " << kf_rvec;
+
+
+    cv::projectPoints(kf_points3d, kf_rvec, kf_tvec, calib.getIntrinsic(), calib.getDistorsion(), kf_projectedpoints);
+    kf_homography = cv::findHomography(kf_points3d,
+                                    kf_projectedpoints);
+    
+    //cout << homography.size() << " ?= " << kf_homography.size() << endl;
+    
+    //findhomography from projected points
+    //use this kalman predicted homography
+    
+    //cout << "kalman predict\n";
+
+}
+
+void TrackingInfo::correctKalman(){
+    kf_meas.at<float>(0) = pose3d.Tvec.at<float>(0);
+    kf_meas.at<float>(1) = pose3d.Tvec.at<float>(1);
+    kf_meas.at<float>(2) = pose3d.Tvec.at<float>(2);
+    
+    kf_meas.at<float>(3) = pose3d.Rvec.at<float>(0);
+    kf_meas.at<float>(4) = pose3d.Rvec.at<float>(1);
+    kf_meas.at<float>(5) = pose3d.Rvec.at<float>(2);
+    
+    kf.correct(kf_meas);
+    kf_has_prediction = true;
+    
+    //cout << "kalman correct\n";
+}
+
+void TrackingInfo::updateKalman(){
+    kf_lastTick = kf_tick;
+    kf_tick = cv::getTickCount();
+    
+    if(found)
+    {
+        if(kf_has_prediction)
+        {
+            predictKalman();
+        }
+        
+        correctKalman();
+        
+    }
+    else
+    {
+        resetKalman();
+    }
+}
+
+void TrackingInfo::drawKalmanPts(cv::Mat &img)
+{
+    for (size_t i = 0; i < kf_projectedpoints.size(); i++)
+    {
+        cv::line(img, kf_projectedpoints[i], kf_projectedpoints[ (i+1) % kf_projectedpoints.size() ], Scalar(255,0,0), 2, CV_AA);
+    }
+    //cout << "pts: " << kf_projectedpoints << endl;
+}
+
+void TrackingInfo::initKalman(const ImageTarget& imageTarget, const CameraCalibration& calibration){
+    int stateSize = 12; //tx, ty, tz, v_tx, v_ty, v_tz, rx, ry, rz, v_rx, v_ry, v_rz
+    int measSize = 6;//tx', ty', tz', rx', ry', rz'
+    int contrSize = 0;
+    unsigned int type = CV_32F;
+    
+    kf = KalmanFilter(stateSize, measSize, contrSize, type);
+    kf_state = Mat(stateSize, 1, type);
+    kf_meas = Mat(measSize, 1, type);
+    // Transition State Matrix A
+    // Note: set dT at each processing step!
+    // [ 1 0 0 dT 0  0  0 0 0 0  0  0  ]
+    // [ 0 1 0 0  dT 0  0 0 0 0  0  0  ]
+    // [ 0 0 1 0  0  dT 0 0 0 0  0  0  ]
+    // [ 0 0 0 1  0  0  0 0 0 0  0  0  ]
+    // [ 0 0 0 0  1  0  0 0 0 0  0  0  ]
+    // [ 0 0 0 0  0  1  0 0 0 0  0  0  ]
+    // [ 0 0 0 0  0  0  1 0 0 dT 0  0  ]
+    // [ 0 0 0 0  0  0  0 1 0 0  dT 0  ]
+    // [ 0 0 0 0  0  0  0 0 1 0  0  dT ]
+    // [ 0 0 0 0  0  0  0 0 0 1  0  0  ]
+    // [ 0 0 0 0  0  0  0 0 0 0  1  0  ]
+    // [ 0 0 0 0  0  0  0 0 0 0  0  1  ]
+    //dT's at 3, 16, 29, 81, 94, 107
+    cv::setIdentity(kf.transitionMatrix);
+    
+    // Measure Matrix H
+    // [ 1 0 0 0 0 0 0 0 0 0 0 0 ]
+    // [ 0 1 0 0 0 0 0 0 0 0 0 0 ]
+    // [ 0 0 1 0 0 0 0 0 0 0 0 0 ]
+    // [ 0 0 0 0 0 0 1 0 0 0 0 0 ]
+    // [ 0 0 0 0 0 0 0 1 0 0 0 0 ]
+    // [ 0 0 0 0 0 0 0 0 1 0 0 0 ]
+
+    kf.measurementMatrix = cv::Mat::zeros(measSize, stateSize, type);
+    kf.measurementMatrix.at<float>(0)  = 1.0f;
+    kf.measurementMatrix.at<float>(13) = 1.0f;
+    kf.measurementMatrix.at<float>(26)  = 1.0f;
+    kf.measurementMatrix.at<float>(42)  = 1.0f;
+    kf.measurementMatrix.at<float>(55)  = 1.0f;
+    kf.measurementMatrix.at<float>(68)  = 1.0f;
+
+    // Process Noise Covariance Matrix Q
+    // [ Etx 0   0   0     0     0     0   0   0   0     0     0     ]
+    // [ 0   Ety 0   0     0     0     0   0   0   0     0     0     ]
+    // [ 0   0   Etz 0     0     0     0   0   0   0     0     0     ]
+    // [ 0   0   0   Ev_tx 0     0     0   0   0   0     0     0     ]
+    // [ 0   0   0   0     Ev_ty 0     0   0   0   0     0     0     ]
+    // [ 0   0   0   0     0     Ev_tz 0   0   0   0     0     0     ]
+    // [ 0   0   0   0     0     0     Erx 0   0   0     0     0     ]
+    // [ 0   0   0   0     0     0     0   Ery 0   0     0     0     ]
+    // [ 0   0   0   0     0     0     0   0   Erz 0     0     0     ]
+    // [ 0   0   0   0     0     0     0   0   0   Ev_rx 0     0     ]
+    // [ 0   0   0   0     0     0     0   0   0   0     Ev_ry 0     ]
+    // [ 0   0   0   0     0     0     0   0   0   0     0     Ev_rz ]
+    kf.processNoiseCov.at<float>(0) = 1e-2;
+    kf.processNoiseCov.at<float>(13) = 1e-2;
+    kf.processNoiseCov.at<float>(26) = 1e-2;
+    kf.processNoiseCov.at<float>(39) = .1;
+    kf.processNoiseCov.at<float>(52) = .1;
+    kf.processNoiseCov.at<float>(65) = .1;
+    kf.processNoiseCov.at<float>(78) = 1e-2;
+    kf.processNoiseCov.at<float>(91) = 1e-2;
+    kf.processNoiseCov.at<float>(104) = 1e-2;
+    kf.processNoiseCov.at<float>(117) = .1;
+    kf.processNoiseCov.at<float>(130) = .1;
+    kf.processNoiseCov.at<float>(143) = .1;
+    
+    cv::setIdentity(kf.measurementNoiseCov, cv::Scalar(1e-1));
+    
+    kf_tick = 0;
+    kf_has_prediction = false;
+    
+    kf_points3d = imageTarget.points3d;
+    calib = calibration;
+}
+
+void TrackingInfo::resetKalman(){
+    // >>>> Initialization
+    kf.errorCovPre.at<float>(0) = 1;
+    kf.errorCovPre.at<float>(13) = 1;
+    kf.errorCovPre.at<float>(26) = 1;
+    kf.errorCovPre.at<float>(39) = 1;
+    kf.errorCovPre.at<float>(52) = 1;
+    kf.errorCovPre.at<float>(65) = 1;
+    kf.errorCovPre.at<float>(78) = 1;
+    kf.errorCovPre.at<float>(91) = 1;
+    kf.errorCovPre.at<float>(104) = 1;
+    kf.errorCovPre.at<float>(117) = 1;
+    kf.errorCovPre.at<float>(130) = 1;
+    kf.errorCovPre.at<float>(143) = 1;
+    
+    kf_state.at<float>(0)  = kf_meas.at<float>(0);
+    kf_state.at<float>(1)  = kf_meas.at<float>(1);
+    kf_state.at<float>(2)  = kf_meas.at<float>(2);
+    kf_state.at<float>(3)  = 0;
+    kf_state.at<float>(4)  = 0;
+    kf_state.at<float>(5)  = 0;
+    kf_state.at<float>(6)  = kf_meas.at<float>(3);
+    kf_state.at<float>(7)  = kf_meas.at<float>(4);
+    kf_state.at<float>(8)  = kf_meas.at<float>(5);
+    kf_state.at<float>(9)  = 0;
+    kf_state.at<float>(10) = 0;
+    kf_state.at<float>(11) = 0;
+    // <<<< Initialization
+    
+    kf.statePost = kf_state;
+    
+    kf_has_prediction = false;
+}
+

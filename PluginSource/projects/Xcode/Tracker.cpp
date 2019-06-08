@@ -79,7 +79,11 @@ bool Tracker::findPattern(const cv::Mat& image)
             pts[i] = keypts[i].pt;
         }
         //warp
-        perspectiveTransform(pts, pts, m_trackingInfo.homography);
+        //cout << "kf_homo: " << m_trackingInfo.kf_homography.size() << endl;
+        //if(!m_trackingInfo.kf_homography.empty())
+        //    perspectiveTransform(pts, pts, m_trackingInfo.kf_homography);
+        //else
+            perspectiveTransform(pts, pts, m_trackingInfo.homography);
         //set pts
         for(int i = 0; i < pts.size(); i++)
         {
@@ -268,6 +272,7 @@ bool Tracker::findPattern(const cv::Mat& image)
     //cout << "matches count: " << m_matches.size() << ". kp size =  " << m_queryKeypoints.size() << endl;
     
     homographyFoundInLastFrame = homographyFound;
+    m_trackingInfo.found = homographyFound;
     return homographyFound;
 }
 

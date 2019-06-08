@@ -316,8 +316,10 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 	if (s_CurrentAPI == NULL)
 		return;
     
-	RenderWebcamTexture();
-        
+	//RenderWebcamTexture();
+    
+    cap >> webcamImage;
+    
     //process frame
     ARUtils::Resize(webcamImage, gray);
     ARUtils::GetGraySharp(gray, gray);

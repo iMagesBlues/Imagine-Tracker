@@ -50,9 +50,28 @@ struct TrackingInfo
     std::vector<cv::Point2f>  points2d;
     Transformation            pose3d;
     
+    cv::KalmanFilter          kf;
+    cv::Mat                   kf_state;
+    cv::Mat                   kf_meas;
+    bool                      kf_has_prediction;
+    vector<Point3f>           kf_points3d;
+    cv::Mat                   kf_homography;
+    std::vector<cv::Point2f>  kf_projectedpoints;
+    
+    CameraCalibration   calib;
+    
     void draw2dContour(cv::Mat& image, cv::Scalar color) const;
     void computePose(const ImageTarget& imageTarget, const CameraCalibration& calibration);
     void showAxes(CameraCalibration calib, Transformation tMat, Mat& img);
+    void initKalman(const ImageTarget& imageTarget, const CameraCalibration& calibration);
+    void updateKalman();
+    void predictKalman();
+    void correctKalman();
+    void resetKalman();
+    void drawKalmanPts(cv::Mat& img);
+    
+    double kf_lastTick;
+    double kf_tick;
 };
 
 

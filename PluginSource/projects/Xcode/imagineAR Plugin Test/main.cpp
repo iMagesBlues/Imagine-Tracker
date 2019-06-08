@@ -59,6 +59,8 @@ int main(int argc, const char * argv[]) {
     cv::Size min = ARUtils::GetScaledSize(cv::Size(webcamImage.cols, webcamImage.rows));
     CameraCalibration calib(min.width, min.width, min.width / 2, min.height / 2);
 
+    tracker.m_trackingInfo.initKalman(imageTarget, calib);
+    
     for(;;)
     {
         cv::Mat frame, small, gray, debugMatches, masked, mask;
@@ -73,7 +75,8 @@ int main(int argc, const char * argv[]) {
 
         bool found = tracker.findPattern(gray);
 
-
+        if(!tracker.m_trackingInfo.kf_homography.empty() && found)
+            tracker.m_trackingInfo.drawKalmanPts(gray);
 
         cv::drawMatches( gray, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints,
                         tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
@@ -87,20 +90,21 @@ int main(int argc, const char * argv[]) {
 
 
             //show outline
-            tracker.m_trackingInfo.draw2dContour(debugMatches, Scalar(0,255,255));
+            //tracker.m_trackingInfo.draw2dContour(debugMatches, Scalar(0,255,255));
             //show axes
             tracker.m_trackingInfo.showAxes(calib, tracker.m_trackingInfo.pose3d, debugMatches);
 
-
+            tracker.m_trackingInfo.computePose(imageTarget, calib);
+            
+            
         }
 
-
+        tracker.m_trackingInfo.updateKalman();
 
         cv::imshow("vid", debugMatches);
 
         if(!tracker.m_warpedImg2.empty())
             cv::imshow("warped", tracker.m_warpedImg2);
-        //TODO: Kalman homography
 
         if(waitKey(30) >= 0) break;
     }
