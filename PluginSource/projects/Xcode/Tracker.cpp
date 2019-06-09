@@ -80,10 +80,12 @@ bool Tracker::findPattern(const cv::Mat& image)
         }
         //warp
         //cout << "kf_homo: " << m_trackingInfo.kf_homography.size() << endl;
-        //if(!m_trackingInfo.kf_homography.empty())
-        //    perspectiveTransform(pts, pts, m_trackingInfo.kf_homography);
-        //else
-            perspectiveTransform(pts, pts, m_trackingInfo.homography);
+        if(!m_trackingInfo.kf_homography.empty() && m_trackingInfo.kf_has_prediction){
+            Mat feedbackHomo = m_trackingInfo.kf_homography;
+            perspectiveTransform(pts, pts, feedbackHomo);
+        }
+        else
+            perspectiveTransform(pts, pts, m_trackingInfo.raw_homography);
         //set pts
         for(int i = 0; i < pts.size(); i++)
         {
@@ -171,13 +173,6 @@ bool Tracker::findPattern(const cv::Mat& image)
                 
                 // Match with pattern
                 getMatches(m_queryDescriptors, refinedMatches2);
-                /*Size size1 = Size(m_grayImg.cols, m_grayImg.rows);
-                getGMSMatches(size1,
-                              m_imageTarget.size,
-                              m_queryKeypoints,
-                              m_imageTarget.keypoints,
-                              m_queryDescriptors,
-                              refinedMatches2);*/
                 
                 // Estimate new refinement homography
                 homographyFound = refineMatchesWithHomography(
@@ -193,10 +188,6 @@ bool Tracker::findPattern(const cv::Mat& image)
                     // Get a result homography as result of matrix product of refined and rough homographies:
                     best_homography = m_roughHomography * m_refinedHomography * m_refinedHomography2;
                     
-                    
-                    
-                    // Transform contour with precise homography
-                    cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, best_homography);
                 }
                 else
                 {
@@ -205,11 +196,6 @@ bool Tracker::findPattern(const cv::Mat& image)
                     // Get a result homography as result of matrix product of refined and rough homographies:
                     best_homography = m_roughHomography * m_refinedHomography;
                     m_warpedImg = m_warpedImg2;
-                    
-                 
-
-                    // Transform contour with precise homography
-                    cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, best_homography);
                 }
             }
             else
@@ -217,25 +203,19 @@ bool Tracker::findPattern(const cv::Mat& image)
                 homographyRefined = false;
                 
                 best_homography = m_roughHomography;
-                // Transform contour with precise homography
-                cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, best_homography);
             }
         }
         else
         {
             best_homography = m_roughHomography;
 
-            // Transform contour with rough homography
-            cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.points2d, m_roughHomography);
-        
+            // Transform contour with rough homography        
         }
         
-        
-
     }
     else
     {
-        
+
         //stringstream ss;
         //ss << "homography not found " << std::to_string(m_matches.size()) << endl;
         //Debug::Log(ss);
@@ -249,14 +229,10 @@ bool Tracker::findPattern(const cv::Mat& image)
     {
         //m_trackingInfo.maskROI = createMaskROI();
         
-        if(m_trackingInfo.homography.empty())
-            best_homography.copyTo(m_trackingInfo.homography);
         
-        //negative feedback;
-        //cv::accumulateWeighted(best_homography, m_trackingInfo.homography, 0.9);
+        m_trackingInfo.raw_homography = best_homography - 0.1 * m_trackingInfo.raw_homography;
         
-        Mat error = best_homography - m_trackingInfo.homography;
-        m_trackingInfo.homography = best_homography - 0.1 * m_trackingInfo.homography;
+        cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.raw_points2d, m_trackingInfo.raw_homography);
         
         //use KLT to recover matches lost due to high motion
         //computeKLT(image);
@@ -511,7 +487,7 @@ cv::Mat Tracker::createMaskROI()
     
     //quad mask
     vector<Point> ROI_Poly;
-    approxPolyDP(m_trackingInfo.points2d, ROI_Poly, 1.0, true);
+    approxPolyDP(m_trackingInfo.raw_points2d, ROI_Poly, 1.0, true);
     fillConvexPoly(mask, &ROI_Poly[0], ROI_Poly.size(), 255, 8, 0);
     
     //dots mask

@@ -45,30 +45,38 @@ struct TrackingInfo
 {
     
     bool                      found = false;
-    cv::Mat                   homography;
+    cv::Mat                   raw_homography;
     cv::Mat                   maskROI;
-    std::vector<cv::Point2f>  points2d;
-    Transformation            pose3d;
+    std::vector<cv::Point2f>  raw_points2d;
+    Transformation            raw_pose3d;
     
     cv::KalmanFilter          kf;
     cv::Mat                   kf_state;
     cv::Mat                   kf_meas;
     bool                      kf_has_prediction;
-    vector<Point3f>           kf_points3d;
+
+    ImageTarget               kf_imagetarget;
     cv::Mat                   kf_homography;
     std::vector<cv::Point2f>  kf_projectedpoints;
+    float                     steadystate = 0;
+    
+    cv::Mat                   finalHomography;
+    Transformation            finalPose3D;
     
     CameraCalibration   calib;
     
-    void draw2dContour(cv::Mat& image, cv::Scalar color) const;
-    void computePose(const ImageTarget& imageTarget, const CameraCalibration& calibration);
+    void drawRawOutline(cv::Mat& image, cv::Scalar color) const;
+    void computeRawPose(const ImageTarget& imageTarget, const CameraCalibration& calibration);
     void showAxes(CameraCalibration calib, Transformation tMat, Mat& img);
     void initKalman(const ImageTarget& imageTarget, const CameraCalibration& calibration);
     void updateKalman();
     void predictKalman();
     void correctKalman();
     void resetKalman();
-    void drawKalmanPts(cv::Mat& img);
+    void drawKalmanOutline(cv::Mat& img);
+    
+    void finalizeHomography();
+    void drawFinalOutline(cv::Mat& img);
     
     double kf_lastTick;
     double kf_tick;

@@ -144,11 +144,11 @@ void ImageTarget::ImportDatabase(string imgName)
 
 //---------Tracking Info-----------------
 
-void TrackingInfo::draw2dContour(cv::Mat& image, cv::Scalar color) const
+void TrackingInfo::drawRawOutline(cv::Mat& image, cv::Scalar color) const
 {
-    for (size_t i = 0; i < points2d.size(); i++)
+    for (size_t i = 0; i < raw_points2d.size(); i++)
     {
-        cv::line(image, points2d[i], points2d[ (i+1) % points2d.size() ], color, 2, CV_AA);
+        cv::line(image, raw_points2d[i], raw_points2d[ (i+1) % raw_points2d.size() ], color, 2, CV_AA);
     }
 }
 
@@ -170,48 +170,32 @@ void TrackingInfo::showAxes(CameraCalibration calib, Transformation tMat, Mat& i
     
 }
 
-void TrackingInfo::computePose(const ImageTarget& imageTarget, const CameraCalibration& calibration)
+void TrackingInfo::computeRawPose(const ImageTarget& imageTarget, const CameraCalibration& calibration)
 {
     cv::Mat Rvec;
     cv::Mat_<float> Tvec;
     cv::Mat raux = (Mat_<double>(3,1));
     cv::Mat taux = (Mat_<double>(3,1));
-
-
     
-    //cout << "rsize:" << raux.size << ", tsize:" <<taux.size;
-    
-    cv::solvePnP(imageTarget.points3d, points2d, calibration.getIntrinsic(), calibration.getDistorsion(), raux, taux, false, SOLVEPNP_ITERATIVE);
+    cv::solvePnP(imageTarget.points3d, raw_points2d, calibration.getIntrinsic(), calibration.getDistorsion(), raux, taux, false, SOLVEPNP_ITERATIVE);
     raux.convertTo(Rvec,CV_32F);
     taux.convertTo(Tvec ,CV_32F);
     
-    //Tvec = pos
-    //Rvec = rot
-    
-    pose3d.Rvec = Rvec;
-    pose3d.Tvec = Tvec;
+    raw_pose3d.Rvec = Rvec;
+    raw_pose3d.Tvec = Tvec;
     
     cv::Mat_<float> rotMat(3,3);
     cv::Rodrigues(Rvec, rotMat);
-    
-    //cout << "Tvec = "<< endl << " "  << Tvec << endl << endl;
-    //cout << "RVec = "<< endl << " "  << Rvec << endl << endl;
-
     
     // Copy to transformation matrix
     for (int col=0; col<3; col++)
     {
         for (int row=0; row<3; row++)
         {
-            pose3d.r().mat[row][col] = rotMat(row,col); // Copy rotation component
+            raw_pose3d.r().mat[row][col] = rotMat(row,col); // Copy rotation component
         }
-        pose3d.t().data[col] = Tvec(col); // Copy translation component
+        raw_pose3d.t().data[col] = Tvec(col); // Copy translation component
     }
-    
-    
-    // Since solvePnP finds camera location, w.r.t to marker pose, to get marker pose w.r.t to the camera we invert it.
-    //pose3d = pose3d.getInverted();
-    
 }
 
 
@@ -241,31 +225,78 @@ void TrackingInfo::predictKalman(){
     kf_rvec.at<float>(1) = kf_state.at<float>(7);
     kf_rvec.at<float>(2) = kf_state.at<float>(8);
     
-    cout << pose3d.Tvec.at<float>(0) << " = " << kf_tvec.at<float>(0) << endl;
+    //fix gimbal locking singularity at z-axis
+    float rz = kf_rvec.at<float>(2);
+    if(rz > M_PI)
+    {
+        kf_rvec.at<float>(2) = -2 * M_PI + rz;
+        cout << " flip to -rz\n";
+        resetKalman();
+    }
+    else if(rz < -M_PI)
+    {
+        kf_rvec.at<float>(2) = 2 * M_PI - rz;
+        cout << " flip to +rz\n";
+        resetKalman();
+
+    }
     //cout << pose3d.Rvec << " : " << kf_rvec;
-
-
-    cv::projectPoints(kf_points3d, kf_rvec, kf_tvec, calib.getIntrinsic(), calib.getDistorsion(), kf_projectedpoints);
-    kf_homography = cv::findHomography(kf_points3d,
-                                    kf_projectedpoints);
     
-    //cout << homography.size() << " ?= " << kf_homography.size() << endl;
+    std::vector<float> tvel;
+    std::vector<float> rvel;
+    tvel.resize(3);
+    rvel.resize(3);
+
+    tvel[0] = kf_state.at<float>(3);
+    tvel[1] = kf_state.at<float>(4);
+    tvel[3] = kf_state.at<float>(5);
+    
+    rvel[0] = kf_state.at<float>(9);
+    rvel[1] = kf_state.at<float>(10);
+    rvel[3] = kf_state.at<float>(11);
+    
+    float tvmag = sqrt(tvel[0]*tvel[0] + tvel[1]*tvel[1] + tvel[2]*tvel[2]);
+    float rvmag = sqrt(rvel[0]*rvel[0] + rvel[1]*rvel[1] + rvel[2]*rvel[2]);
+    //cout << "tvel = " << tvmag << ",\t";
+    //cout << "rvel = " << rvmag << endl;
+    //cout << "rz = " << rz << endl;
+    
+    steadystate = tvmag * rvmag;
+    cout << "ss: " << steadystate << endl;
+
+    cv::projectPoints(kf_imagetarget.points3d, kf_rvec, kf_tvec, calib.getIntrinsic(), calib.getDistorsion(), kf_projectedpoints);
     
     //findhomography from projected points
-    //use this kalman predicted homography
+    kf_homography = cv::findHomography(kf_imagetarget.points2d, kf_projectedpoints);
     
+    
+    //use this kalman predicted homography
     //cout << "kalman predict\n";
 
 }
 
 void TrackingInfo::correctKalman(){
-    kf_meas.at<float>(0) = pose3d.Tvec.at<float>(0);
-    kf_meas.at<float>(1) = pose3d.Tvec.at<float>(1);
-    kf_meas.at<float>(2) = pose3d.Tvec.at<float>(2);
     
-    kf_meas.at<float>(3) = pose3d.Rvec.at<float>(0);
-    kf_meas.at<float>(4) = pose3d.Rvec.at<float>(1);
-    kf_meas.at<float>(5) = pose3d.Rvec.at<float>(2);
+//    //fix gimbal locking singularity in z-axis
+//    float rz = kf_state.at<float>(2);
+//    if(rz > M_PI){
+//        resetKalman();
+//        //kf_state.at<float>(2) = -2 * M_PI + rz;
+//    }
+//    else if(rz < -M_PI){
+//        resetKalman();
+//        //kf_state.at<float>(2) = 2 * M_PI + rz;
+//    }
+   
+    
+    kf_meas.at<float>(0) = raw_pose3d.Tvec.at<float>(0);
+    kf_meas.at<float>(1) = raw_pose3d.Tvec.at<float>(1);
+    kf_meas.at<float>(2) = raw_pose3d.Tvec.at<float>(2);
+    
+    kf_meas.at<float>(3) = raw_pose3d.Rvec.at<float>(0);
+    kf_meas.at<float>(4) = raw_pose3d.Rvec.at<float>(1);
+    kf_meas.at<float>(5) = raw_pose3d.Rvec.at<float>(2);
+    
     
     kf.correct(kf_meas);
     kf_has_prediction = true;
@@ -293,13 +324,16 @@ void TrackingInfo::updateKalman(){
     }
 }
 
-void TrackingInfo::drawKalmanPts(cv::Mat &img)
+void TrackingInfo::drawKalmanOutline(cv::Mat &img)
 {
     for (size_t i = 0; i < kf_projectedpoints.size(); i++)
     {
-        cv::line(img, kf_projectedpoints[i], kf_projectedpoints[ (i+1) % kf_projectedpoints.size() ], Scalar(255,0,0), 2, CV_AA);
+        cv::line(img, kf_projectedpoints[i], kf_projectedpoints[ (i+1) % kf_projectedpoints.size() ], Scalar(0,128,0), 2, CV_AA);
+        cv::circle(img, kf_projectedpoints[i], 5, Scalar(0,128,0), CV_FILLED);
+        //cv::circle(img, kf_imagetarget.points2d[i], 10, Scalar(128, 128,128));
     }
     //cout << "pts: " << kf_projectedpoints << endl;
+
 }
 
 void TrackingInfo::initKalman(const ImageTarget& imageTarget, const CameraCalibration& calibration){
@@ -357,25 +391,29 @@ void TrackingInfo::initKalman(const ImageTarget& imageTarget, const CameraCalibr
     // [ 0   0   0   0     0     0     0   0   0   Ev_rx 0     0     ]
     // [ 0   0   0   0     0     0     0   0   0   0     Ev_ry 0     ]
     // [ 0   0   0   0     0     0     0   0   0   0     0     Ev_rz ]
-    kf.processNoiseCov.at<float>(0) = 1e-2;
-    kf.processNoiseCov.at<float>(13) = 1e-2;
-    kf.processNoiseCov.at<float>(26) = 1e-2;
-    kf.processNoiseCov.at<float>(39) = .1;
-    kf.processNoiseCov.at<float>(52) = .1;
-    kf.processNoiseCov.at<float>(65) = .1;
-    kf.processNoiseCov.at<float>(78) = 1e-2;
-    kf.processNoiseCov.at<float>(91) = 1e-2;
-    kf.processNoiseCov.at<float>(104) = 1e-2;
-    kf.processNoiseCov.at<float>(117) = .1;
-    kf.processNoiseCov.at<float>(130) = .1;
-    kf.processNoiseCov.at<float>(143) = .1;
+    float nc1 = .01;
+    float nc2 = 1;
+    float nc3 = .01;
+    kf.processNoiseCov.at<float>(0)   = nc1;
+    kf.processNoiseCov.at<float>(13)  = nc1;
+    kf.processNoiseCov.at<float>(26)  = nc1;
+    kf.processNoiseCov.at<float>(39)  = nc2;
+    kf.processNoiseCov.at<float>(52)  = nc2;
+    kf.processNoiseCov.at<float>(65)  = nc2;
+    kf.processNoiseCov.at<float>(78)  = nc1;
+    kf.processNoiseCov.at<float>(91)  = nc1;
+    kf.processNoiseCov.at<float>(104) = nc1;
+    kf.processNoiseCov.at<float>(117) = nc3;
+    kf.processNoiseCov.at<float>(130) = nc3;
+    kf.processNoiseCov.at<float>(143) = nc3;
     
     cv::setIdentity(kf.measurementNoiseCov, cv::Scalar(1e-1));
     
     kf_tick = 0;
     kf_has_prediction = false;
     
-    kf_points3d = imageTarget.points3d;
+    kf_imagetarget = imageTarget;
+    
     calib = calibration;
 }
 
@@ -411,5 +449,15 @@ void TrackingInfo::resetKalman(){
     kf.statePost = kf_state;
     
     kf_has_prediction = false;
+    kf_homography = raw_homography;
+}
+
+void TrackingInfo::finalizeHomography(){
+    
+}
+
+void TrackingInfo::drawFinalOutline(cv::Mat &img)
+{
+    
 }
 

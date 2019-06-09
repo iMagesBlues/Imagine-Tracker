@@ -75,8 +75,7 @@ int main(int argc, const char * argv[]) {
 
         bool found = tracker.findPattern(gray);
 
-        if(!tracker.m_trackingInfo.kf_homography.empty() && found)
-            tracker.m_trackingInfo.drawKalmanPts(gray);
+        
 
         cv::drawMatches( gray, tracker.m_queryKeypoints, trainImg, imageTarget.keypoints,
                         tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
@@ -84,17 +83,26 @@ int main(int argc, const char * argv[]) {
 
 
         if(found){
-            tracker.m_trackingInfo.computePose(imageTarget, calib);
+            tracker.m_trackingInfo.computeRawPose(imageTarget, calib);
 
             //show masked region
-
+            
+            //show kalman filtered homography
+            if(!tracker.m_trackingInfo.kf_homography.empty() && found)
+            {
+                tracker.m_trackingInfo.drawKalmanOutline(debugMatches);
+                cv:Mat kf_warped;
+                cv::warpPerspective(gray, kf_warped, tracker.m_trackingInfo.kf_homography, tracker.m_trackingInfo.kf_imagetarget.size, cv::WARP_INVERSE_MAP | cv::INTER_CUBIC);
+                
+                cv::imshow("kf_warped", kf_warped);
+            }
 
             //show outline
-            //tracker.m_trackingInfo.draw2dContour(debugMatches, Scalar(0,255,255));
+            tracker.m_trackingInfo.drawRawOutline(debugMatches, Scalar(0,255,255));
             //show axes
-            tracker.m_trackingInfo.showAxes(calib, tracker.m_trackingInfo.pose3d, debugMatches);
+            tracker.m_trackingInfo.showAxes(calib, tracker.m_trackingInfo.raw_pose3d, debugMatches);
 
-            tracker.m_trackingInfo.computePose(imageTarget, calib);
+            tracker.m_trackingInfo.computeRawPose(imageTarget, calib);
             
             
         }
@@ -103,8 +111,8 @@ int main(int argc, const char * argv[]) {
 
         cv::imshow("vid", debugMatches);
 
-        if(!tracker.m_warpedImg2.empty())
-            cv::imshow("warped", tracker.m_warpedImg2);
+        //if(!tracker.m_warpedImg2.empty())
+        //   cv::imshow("warped", tracker.m_warpedImg2);
 
         if(waitKey(30) >= 0) break;
     }

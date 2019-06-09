@@ -100,7 +100,7 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API DebugShowTexture()
                     vector<char>(), DrawMatchesFlags::DEFAULT );
     
     if(tracker.m_trackingInfo.found){
-        tracker.m_trackingInfo.draw2dContour(debugMatches, Scalar(0,255,255));
+        tracker.m_trackingInfo.drawRawOutline(debugMatches, Scalar(0,255,255));
         tracker.m_trackingInfo.showAxes(cameraCalibration, tracker.m_trackingInfo.pose3d, debugMatches);
 
     }
@@ -344,7 +344,7 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
     //Target Tracked
     if(found){
         if (imageTargetTracked != nullptr){
-            tracker.m_trackingInfo.computePose(imageTarget, cameraCalibration);
+            tracker.m_trackingInfo.computeRawPose(imageTarget, cameraCalibration);
             stringstream ss;
             imageTargetTracked(tracker.m_trackingInfo.pose3d.getMat44().data);
         }
