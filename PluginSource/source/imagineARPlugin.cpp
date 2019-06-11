@@ -33,6 +33,8 @@ static CameraCalibration cameraCalibration;
 
 static ImageTarget imageTarget;
 static Tracker tracker;
+static bool foundInLastFrame = false;
+static bool found = false;
 
 struct Color32
 {
@@ -99,9 +101,18 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API DebugShowTexture()
                     tracker.m_matches, debugMatches, Scalar(0,255,0), Scalar(0,0,255),
                     vector<char>(), DrawMatchesFlags::DEFAULT );
     
-    if(tracker.m_trackingInfo.found){
+    if(found){
         tracker.m_trackingInfo.drawRawOutline(debugMatches, Scalar(0,255,255));
-        tracker.m_trackingInfo.showAxes(cameraCalibration, tracker.m_trackingInfo.pose3d, debugMatches);
+        tracker.m_trackingInfo.showAxes(cameraCalibration, tracker.m_trackingInfo.raw_pose3d, debugMatches);
+        
+        if(!tracker.m_trackingInfo.kf_homography.empty() && tracker.m_trackingInfo.kf_has_prediction)
+        {
+            tracker.m_trackingInfo.drawKalmanOutline(debugMatches);
+            /*cv:Mat kf_warped;
+            cv::warpPerspective(gray, kf_warped, tracker.m_trackingInfo.kf_homography, tracker.m_trackingInfo.kf_imagetarget.size, cv::WARP_INVERSE_MAP | cv::INTER_CUBIC);
+            
+            cv::imshow("kf_warped", kf_warped);*/
+        }
 
     }
     
@@ -165,6 +176,9 @@ extern "C" int UNITY_INTERFACE_EXPORT InitImageTarget(const char* imgName){
     
     tracker.train(imageTarget);
     Debug::Log("init tracker done");
+    
+    //init kalman
+    tracker.m_trackingInfo.initKalman(imageTarget, cameraCalibration);
     
     return 0;
 }
@@ -322,34 +336,44 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
     
     //process frame
     ARUtils::Resize(webcamImage, gray);
-    ARUtils::GetGraySharp(gray, gray);
+    if(!tracker.homographyFoundInLastFrame)
+        ARUtils::GetGraySharp(gray, gray);
+    else
+        ARUtils::GetGraySharp(gray, gray);
     
     //track imagetarget
-    bool found = tracker.findPattern(gray);
+    found = tracker.findPattern(gray);
     
     //Found Target
-    if(found && !tracker.m_trackingInfo.found)
+    if(found && !foundInLastFrame)
     {
         if(imageTargetFound != nullptr){
             imageTargetFound();
         }
     }
     //Lost Target
-    else if(!found && tracker.m_trackingInfo.found)
+    else if(!found && foundInLastFrame)
     {
         if(imageTargetLost != nullptr){
             imageTargetLost();
         }
     }
+    
+    
     //Target Tracked
     if(found){
+        tracker.m_trackingInfo.computeRawPose(imageTarget, cameraCalibration);
+    }
+    
+    tracker.m_trackingInfo.updateKalman();
+    
+    if(found){
         if (imageTargetTracked != nullptr){
-            tracker.m_trackingInfo.computeRawPose(imageTarget, cameraCalibration);
-            stringstream ss;
-            imageTargetTracked(tracker.m_trackingInfo.pose3d.getMat44().data);
+            imageTargetTracked(tracker.m_trackingInfo.kf_pose3d.getMat44().data);
         }
     }
-    tracker.m_trackingInfo.found = found;
+
+    foundInLastFrame = found;
 
 }
 

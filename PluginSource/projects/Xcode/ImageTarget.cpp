@@ -177,6 +177,7 @@ void TrackingInfo::computeRawPose(const ImageTarget& imageTarget, const CameraCa
     cv::Mat raux = (Mat_<double>(3,1));
     cv::Mat taux = (Mat_<double>(3,1));
     
+    
     cv::solvePnP(imageTarget.points3d, raw_points2d, calibration.getIntrinsic(), calibration.getDistorsion(), raux, taux, false, SOLVEPNP_ITERATIVE);
     raux.convertTo(Rvec,CV_32F);
     taux.convertTo(Tvec ,CV_32F);
@@ -195,6 +196,22 @@ void TrackingInfo::computeRawPose(const ImageTarget& imageTarget, const CameraCa
             raw_pose3d.r().mat[row][col] = rotMat(row,col); // Copy rotation component
         }
         raw_pose3d.t().data[col] = Tvec(col); // Copy translation component
+    }
+    
+    //compute pose from Kalman
+    kf_pose3d.Rvec = kf_rvec;
+    kf_pose3d.Tvec = kf_tvec;
+    cv::Mat_<float> kf_rotMat(3,3);
+    cv::Rodrigues(kf_rvec, kf_rotMat);
+    
+    // Copy to transformation matrix
+    for (int col=0; col<3; col++)
+    {
+        for (int row=0; row<3; row++)
+        {
+            kf_pose3d.r().mat[row][col] = kf_rotMat(row,col); // Copy rotation component
+        }
+        kf_pose3d.t().data[col] = kf_tvec.at<float>(col); // Copy translation component
     }
 }
 
@@ -215,12 +232,12 @@ void TrackingInfo::predictKalman(){
     kf_state = kf.predict();
     
     //project points from prediction
-    cv::Mat kf_tvec = Mat_<float>(3,1);
+    //kf_tvec = Mat_<float>(3,1);
     kf_tvec.at<float>(0) = kf_state.at<float>(0);
     kf_tvec.at<float>(1) = kf_state.at<float>(1);
     kf_tvec.at<float>(2) = kf_state.at<float>(2);
     
-    cv::Mat kf_rvec = Mat_<float>(3,1);
+    //kf_rvec = Mat_<float>(3,1);
     kf_rvec.at<float>(0) = kf_state.at<float>(6);
     kf_rvec.at<float>(1) = kf_state.at<float>(7);
     kf_rvec.at<float>(2) = kf_state.at<float>(8);
@@ -268,6 +285,7 @@ void TrackingInfo::predictKalman(){
     
     //findhomography from projected points
     kf_homography = cv::findHomography(kf_imagetarget.points2d, kf_projectedpoints);
+    
     
     
     //use this kalman predicted homography
@@ -391,9 +409,9 @@ void TrackingInfo::initKalman(const ImageTarget& imageTarget, const CameraCalibr
     // [ 0   0   0   0     0     0     0   0   0   Ev_rx 0     0     ]
     // [ 0   0   0   0     0     0     0   0   0   0     Ev_ry 0     ]
     // [ 0   0   0   0     0     0     0   0   0   0     0     Ev_rz ]
-    float nc1 = .01;
-    float nc2 = 1;
-    float nc3 = .01;
+    float nc1 = .0001;
+    float nc2 = 0.5;
+    float nc3 = 0.5;
     kf.processNoiseCov.at<float>(0)   = nc1;
     kf.processNoiseCov.at<float>(13)  = nc1;
     kf.processNoiseCov.at<float>(26)  = nc1;

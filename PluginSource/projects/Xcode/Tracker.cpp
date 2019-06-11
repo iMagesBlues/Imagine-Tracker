@@ -34,6 +34,7 @@ Tracker::Tracker(cv::Ptr<cv::FeatureDetector> detector,
     homographyFoundInLastFrame = false;
     homographyRefined = false;
     homographyRefinedTwice = false;
+    
 }
 
 
@@ -50,10 +51,12 @@ void Tracker::train(const ImageTarget& imageTarget)
     // This allows us to perform search across multiple images:
     std::vector<cv::Mat> descriptors(1);
     descriptors[0] = imageTarget.descriptors;
+    
     m_matcher->add(descriptors);
     
     // After adding train data perform actual train:
     m_matcher->train();
+    
 }
 
 
@@ -81,7 +84,7 @@ bool Tracker::findPattern(const cv::Mat& image)
         //warp
         //cout << "kf_homo: " << m_trackingInfo.kf_homography.size() << endl;
         if(!m_trackingInfo.kf_homography.empty() && m_trackingInfo.kf_has_prediction){
-            Mat feedbackHomo = m_trackingInfo.kf_homography;
+            Mat feedbackHomo = m_trackingInfo.raw_homography;
             perspectiveTransform(pts, pts, feedbackHomo);
         }
         else
@@ -202,7 +205,10 @@ bool Tracker::findPattern(const cv::Mat& image)
             {
                 homographyRefined = false;
                 
-                best_homography = m_roughHomography;
+                if(!m_refinedHomography.empty())
+                    best_homography = m_roughHomography * m_refinedHomography;
+                else
+                    best_homography = m_roughHomography;
             }
         }
         else
@@ -230,7 +236,9 @@ bool Tracker::findPattern(const cv::Mat& image)
         //m_trackingInfo.maskROI = createMaskROI();
         
         
-        m_trackingInfo.raw_homography = best_homography - 0.1 * m_trackingInfo.raw_homography;
+
+        m_trackingInfo.raw_homography = best_homography;// - 0.1 * m_trackingInfo.raw_homography;
+
         
         cv::perspectiveTransform(m_imageTarget.points2d, m_trackingInfo.raw_points2d, m_trackingInfo.raw_homography);
         

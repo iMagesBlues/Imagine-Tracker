@@ -58,6 +58,9 @@ struct TrackingInfo
     ImageTarget               kf_imagetarget;
     cv::Mat                   kf_homography;
     std::vector<cv::Point2f>  kf_projectedpoints;
+    cv::Mat                   kf_tvec = Mat_<float>(3,1);
+    cv::Mat                   kf_rvec = Mat_<float>(3,1);
+    Transformation            kf_pose3d;
     float                     steadystate = 0;
     
     cv::Mat                   finalHomography;

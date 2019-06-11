@@ -102,7 +102,7 @@ int main(int argc, const char * argv[]) {
             //show axes
             tracker.m_trackingInfo.showAxes(calib, tracker.m_trackingInfo.raw_pose3d, debugMatches);
 
-            tracker.m_trackingInfo.computeRawPose(imageTarget, calib);
+            //tracker.m_trackingInfo.computeRawPose(imageTarget, calib);
             
             
         }
