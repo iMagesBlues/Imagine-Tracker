@@ -1,6 +1,10 @@
 # Imagine-Tracker
 Open Source AR Tracker for Unity
 
+<p>
+ <img src="https://user-images.githubusercontent.com/22974556/59549981-e36e4880-8f97-11e9-9444-6cb077f8d37d.gif">
+</p>
+
 To run in Unity Standalone-Mac:
 1.) Make sure your imagetarget is under Assets/Imagetargets/<your_imagetarget_name>.jpg
 2.) In scene.unity. Drag image to ARCamera and Imagetarget gameobjects
