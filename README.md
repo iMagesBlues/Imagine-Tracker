@@ -26,6 +26,7 @@ Known-issues and limitations:
 1.) Standalone-Win, Mobile-iOS and Mobile-Android will be supported very soon in the next revisions.
 2.) Only works on a single imagetarget for now.
 3.) Can't quit Unity after running the plugin. You need to Force-quit for now.. ugh!
+4.) Displaying the Webcam image slows down the tracker. Needs an efficient method to convert openCV Mat to gl texture
 
 
 Shout-out to fellow devs (especially to opencv devs and plugin creators) - 
