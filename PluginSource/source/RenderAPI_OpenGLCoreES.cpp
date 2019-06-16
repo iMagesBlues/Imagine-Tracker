@@ -14,7 +14,7 @@
 #elif UNITY_ANDROID || UNITY_WEBGL
 #	include <GLES2/gl2.h>
 #else
-#	include "GLEW/glew.h"
+#	include "GL/glew.h"
 #endif
 
 
@@ -250,7 +250,7 @@ void RenderAPI_OpenGLCoreES::DrawSimpleTriangles(const float worldMatrix[16], in
 
 void* RenderAPI_OpenGLCoreES::BeginModifyTexture(void* textureHandle, int textureWidth, int textureHeight, int* outRowPitch)
 {
-    const int rowPitch = textureWidth * 4;
+    const int rowPitch = textureWidth * 3;
     // Just allocate a system memory buffer here for simplicity
     unsigned char* data = new unsigned char[rowPitch * textureHeight];
     *outRowPitch = rowPitch;
@@ -263,7 +263,7 @@ void RenderAPI_OpenGLCoreES::EndModifyTexture(void* textureHandle, int textureWi
 	GLuint gltex = (GLuint)(size_t)(textureHandle);
 	// Update texture data, and free the memory buffer
 	glBindTexture(GL_TEXTURE_2D, gltex);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, textureWidth, textureHeight, GL_RGBA, GL_UNSIGNED_BYTE, dataPtr);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, textureWidth, textureHeight, GL_BGR, GL_UNSIGNED_BYTE, dataPtr);
 	delete[](unsigned char*)dataPtr;
 }
 

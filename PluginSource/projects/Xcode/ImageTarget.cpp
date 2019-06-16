@@ -215,10 +215,12 @@ void TrackingInfo::computeRawPose(const ImageTarget& imageTarget, const CameraCa
     }
 }
 
-
 void TrackingInfo::predictKalman(){
-    
     double dT = (kf_tick - kf_lastTick) / getTickFrequency();
+    predictKalman(dT);
+}
+
+void TrackingInfo::predictKalman(const double dT){
     
     kf.transitionMatrix.at<float>(3) = dT;
     kf.transitionMatrix.at<float>(16) = dT;
@@ -272,25 +274,19 @@ void TrackingInfo::predictKalman(){
     rvel[1] = kf_state.at<float>(10);
     rvel[3] = kf_state.at<float>(11);
     
-    float tvmag = sqrt(tvel[0]*tvel[0] + tvel[1]*tvel[1] + tvel[2]*tvel[2]);
-    float rvmag = sqrt(rvel[0]*rvel[0] + rvel[1]*rvel[1] + rvel[2]*rvel[2]);
-    //cout << "tvel = " << tvmag << ",\t";
-    //cout << "rvel = " << rvmag << endl;
-    //cout << "rz = " << rz << endl;
+//    float tvmag = sqrt(tvel[0]*tvel[0] + tvel[1]*tvel[1] + tvel[2]*tvel[2]);
+//    float rvmag = sqrt(rvel[0]*rvel[0] + rvel[1]*rvel[1] + rvel[2]*rvel[2]);
+//    cout << "tvel = " << tvmag << ",\t";
+//    cout << "rvel = " << rvmag << endl;
+//    cout << "rz = " << rz << endl;
     
-    steadystate = tvmag * rvmag;
-    cout << "ss: " << steadystate << endl;
+//    steadystate = tvmag * rvmag;
+//    cout << "ss: " << steadystate << endl;
 
     cv::projectPoints(kf_imagetarget.points3d, kf_rvec, kf_tvec, calib.getIntrinsic(), calib.getDistorsion(), kf_projectedpoints);
     
     //findhomography from projected points
     kf_homography = cv::findHomography(kf_imagetarget.points2d, kf_projectedpoints);
-    
-    
-    
-    //use this kalman predicted homography
-    //cout << "kalman predict\n";
-
 }
 
 void TrackingInfo::correctKalman(){
@@ -339,6 +335,37 @@ void TrackingInfo::updateKalman(){
     else
     {
         resetKalman();
+    }
+}
+
+//pass delta time from Unity
+void TrackingInfo::updateKalman(const double dT){
+    
+    if(found)
+    {
+        //kf_lostTime = 0;
+        if(kf_has_prediction)
+        {
+            predictKalman(dT);
+        }
+        
+        correctKalman();
+        
+    }
+    else
+    {
+//        kf_lostTime += dT;
+//        if(kf_lostTime >= 0.25)
+//        {
+//            resetKalman();
+//        }
+//        else{
+//            if(kf_has_prediction)
+//                predictKalman();
+//        }
+        
+        resetKalman();
+        
     }
 }
 
@@ -410,8 +437,8 @@ void TrackingInfo::initKalman(const ImageTarget& imageTarget, const CameraCalibr
     // [ 0   0   0   0     0     0     0   0   0   0     Ev_ry 0     ]
     // [ 0   0   0   0     0     0     0   0   0   0     0     Ev_rz ]
     float nc1 = .0001;
-    float nc2 = 0.5;
-    float nc3 = 0.5;
+    float nc2 = 1;
+    float nc3 = 1;
     kf.processNoiseCov.at<float>(0)   = nc1;
     kf.processNoiseCov.at<float>(13)  = nc1;
     kf.processNoiseCov.at<float>(26)  = nc1;

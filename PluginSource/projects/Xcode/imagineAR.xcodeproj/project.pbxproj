@@ -10,6 +10,8 @@
 		2A269BC220C3EC9900C526D2 /* ARUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A269BC020C3EC9900C526D2 /* ARUtils.cpp */; };
 		2A269BC320C3EC9900C526D2 /* ARUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A269BC020C3EC9900C526D2 /* ARUtils.cpp */; };
 		2A4B55DD20B168D100FDEA38 /* DebugCPP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A4B55DC20B168D100FDEA38 /* DebugCPP.cpp */; };
+		2A52022622B5E2500096AD4B /* libGLEW.2.1.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A52022522B5E2500096AD4B /* libGLEW.2.1.0.dylib */; };
+		2A52022722B5EE910096AD4B /* libGLEW.2.1.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A52022522B5E2500096AD4B /* libGLEW.2.1.0.dylib */; };
 		2A7449A020C27AFF005CD561 /* CameraCalibration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A74499F20C27AFE005CD561 /* CameraCalibration.cpp */; };
 		2A7449A320C27DEE005CD561 /* GeometryTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A7449A120C27DEE005CD561 /* GeometryTypes.cpp */; };
 		2A7449A420C28B1A005CD561 /* CameraCalibration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A74499F20C27AFE005CD561 /* CameraCalibration.cpp */; };
@@ -18,7 +20,6 @@
 		2AD2F41C20BBCC640055B207 /* Tracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD2F41A20BBCC630055B207 /* Tracker.cpp */; };
 		2AD4A85920BFC1080050E4A0 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD4A85820BFC1080050E4A0 /* main.cpp */; };
 		2AD4A85D20BFE3790050E4A0 /* ImageTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD2F41720BBB0790055B207 /* ImageTarget.cpp */; };
-		2AD4A85E20BFE37D0050E4A0 /* glew.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899BD1CF8399700C4BA4F /* glew.c */; };
 		2AD4A85F20BFE3820050E4A0 /* Tracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AD2F41A20BBCC630055B207 /* Tracker.cpp */; };
 		2AD4A86020BFE39E0050E4A0 /* DebugCPP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A4B55DC20B168D100FDEA38 /* DebugCPP.cpp */; };
 		2AD4A86320BFE41B0050E4A0 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AD4A86220BFE41B0050E4A0 /* CoreFoundation.framework */; };
@@ -46,7 +47,6 @@
 		2B6899B81CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B01CF8396700C4BA4F /* RenderAPI_OpenGLCoreES.cpp */; };
 		2B6899B91CF8396700C4BA4F /* RenderAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B11CF8396700C4BA4F /* RenderAPI.cpp */; };
 		2B6899BA1CF8396700C4BA4F /* imagineARPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899B31CF8396700C4BA4F /* imagineARPlugin.cpp */; };
-		2B6899C11CF8399700C4BA4F /* glew.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899BD1CF8399700C4BA4F /* glew.c */; };
 		2B6899C91CF83DB000C4BA4F /* imagineARPlugin.bundle in Copy Bundle into Unity project */ = {isa = PBXBuildFile; fileRef = 8D576316048677EA00EA77CD /* imagineARPlugin.bundle */; };
 		2B6899CB1CF8409A00C4BA4F /* RenderAPI_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899CA1CF8409A00C4BA4F /* RenderAPI_Metal.mm */; };
 		2BC2A8D5144C433D00D5EF79 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BC2A8D4144C433D00D5EF79 /* OpenGL.framework */; };
@@ -91,8 +91,11 @@
 		0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
 		2A269BC020C3EC9900C526D2 /* ARUtils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ARUtils.cpp; sourceTree = "<group>"; };
 		2A269BC120C3EC9900C526D2 /* ARUtils.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ARUtils.hpp; sourceTree = "<group>"; };
+		2A2CB03222B4F3BE003B760D /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		2A4B55DB20B168D100FDEA38 /* DebugCPP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DebugCPP.hpp; sourceTree = "<group>"; };
 		2A4B55DC20B168D100FDEA38 /* DebugCPP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DebugCPP.cpp; sourceTree = "<group>"; };
+		2A52022322B5E22D0096AD4B /* libglfw.3.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libglfw.3.3.dylib; path = ../../../../../../../../../../usr/local/Cellar/glfw/3.3/lib/libglfw.3.3.dylib; sourceTree = "<group>"; };
+		2A52022522B5E2500096AD4B /* libGLEW.2.1.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libGLEW.2.1.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/glew/2.1.0/lib/libGLEW.2.1.0.dylib; sourceTree = "<group>"; };
 		2A74499E20C27AFD005CD561 /* CameraCalibration.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CameraCalibration.hpp; sourceTree = "<group>"; };
 		2A74499F20C27AFE005CD561 /* CameraCalibration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CameraCalibration.cpp; sourceTree = "<group>"; };
 		2A7449A120C27DEE005CD561 /* GeometryTypes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GeometryTypes.cpp; sourceTree = "<group>"; };
@@ -116,10 +119,6 @@
 		2B6899B11CF8396700C4BA4F /* RenderAPI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderAPI.cpp; path = ../../source/RenderAPI.cpp; sourceTree = "<group>"; };
 		2B6899B21CF8396700C4BA4F /* RenderAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RenderAPI.h; path = ../../source/RenderAPI.h; sourceTree = "<group>"; };
 		2B6899B31CF8396700C4BA4F /* imagineARPlugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = imagineARPlugin.cpp; path = ../../source/imagineARPlugin.cpp; sourceTree = "<group>"; };
-		2B6899BD1CF8399700C4BA4F /* glew.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = glew.c; path = ../../source/GLEW/glew.c; sourceTree = "<group>"; };
-		2B6899BE1CF8399700C4BA4F /* glew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = glew.h; path = ../../source/GLEW/glew.h; sourceTree = "<group>"; };
-		2B6899BF1CF8399700C4BA4F /* glxew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = glxew.h; path = ../../source/GLEW/glxew.h; sourceTree = "<group>"; };
-		2B6899C01CF8399700C4BA4F /* wglew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = wglew.h; path = ../../source/GLEW/wglew.h; sourceTree = "<group>"; };
 		2B6899C21CF839A600C4BA4F /* IUnityGraphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IUnityGraphics.h; path = ../../source/Unity/IUnityGraphics.h; sourceTree = "<group>"; };
 		2B6899C31CF839A600C4BA4F /* IUnityGraphicsD3D9.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IUnityGraphicsD3D9.h; path = ../../source/Unity/IUnityGraphicsD3D9.h; sourceTree = "<group>"; };
 		2B6899C41CF839A600C4BA4F /* IUnityGraphicsD3D11.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IUnityGraphicsD3D11.h; path = ../../source/Unity/IUnityGraphicsD3D11.h; sourceTree = "<group>"; };
@@ -137,6 +136,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A52022622B5E2500096AD4B /* libGLEW.2.1.0.dylib in Frameworks */,
 				2AD4A86820BFE7A90050E4A0 /* OpenGL.framework in Frameworks */,
 				2AD4A86320BFE41B0050E4A0 /* CoreFoundation.framework in Frameworks */,
 			);
@@ -155,6 +155,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A52022722B5EE910096AD4B /* libGLEW.2.1.0.dylib in Frameworks */,
 				8D576314048677EA00EA77CD /* CoreFoundation.framework in Frameworks */,
 				2BC2A8D5144C433D00D5EF79 /* OpenGL.framework in Frameworks */,
 			);
@@ -197,7 +198,6 @@
 		08FB77AFFE84173DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				2B6899BB1CF8397C00C4BA4F /* GLEW */,
 				2B6899BC1CF8398200C4BA4F /* Unity */,
 				2B6899AB1CF8396700C4BA4F /* PlatformBase.h */,
 				2A4B55DC20B168D100FDEA38 /* DebugCPP.cpp */,
@@ -244,6 +244,9 @@
 		2AD4A86120BFE41B0050E4A0 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2A52022522B5E2500096AD4B /* libGLEW.2.1.0.dylib */,
+				2A52022322B5E22D0096AD4B /* libglfw.3.3.dylib */,
+				2A2CB03222B4F3BE003B760D /* GLUT.framework */,
 				2AFB63BD22A75ACB00569A98 /* OpenGLES.framework */,
 				2AFB63BB22A75AC600569A98 /* CoreFoundation.framework */,
 				2AD4A86220BFE41B0050E4A0 /* CoreFoundation.framework */,
@@ -258,17 +261,6 @@
 				2AFB640E22A79FE200569A98 /* iARTracker.m */,
 			);
 			path = iARTracker;
-			sourceTree = "<group>";
-		};
-		2B6899BB1CF8397C00C4BA4F /* GLEW */ = {
-			isa = PBXGroup;
-			children = (
-				2B6899BD1CF8399700C4BA4F /* glew.c */,
-				2B6899BE1CF8399700C4BA4F /* glew.h */,
-				2B6899BF1CF8399700C4BA4F /* glxew.h */,
-				2B6899C01CF8399700C4BA4F /* wglew.h */,
-			);
-			name = GLEW;
 			sourceTree = "<group>";
 		};
 		2B6899BC1CF8398200C4BA4F /* Unity */ = {
@@ -404,7 +396,6 @@
 				2AD4A86520BFE4E50050E4A0 /* RenderAPI.cpp in Sources */,
 				2AD4A86020BFE39E0050E4A0 /* DebugCPP.cpp in Sources */,
 				2AD4A85F20BFE3820050E4A0 /* Tracker.cpp in Sources */,
-				2AD4A85E20BFE37D0050E4A0 /* glew.c in Sources */,
 				2AD4A85D20BFE3790050E4A0 /* ImageTarget.cpp in Sources */,
 				2AD4A85920BFC1080050E4A0 /* main.cpp in Sources */,
 			);
@@ -444,7 +435,6 @@
 				2B6899B91CF8396700C4BA4F /* RenderAPI.cpp in Sources */,
 				2AD2F41C20BBCC640055B207 /* Tracker.cpp in Sources */,
 				2A4B55DD20B168D100FDEA38 /* DebugCPP.cpp in Sources */,
-				2B6899C11CF8399700C4BA4F /* glew.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -462,10 +452,15 @@
 				HEADER_SEARCH_PATHS = (
 					../,
 					"/usr/local/Cellar/opencv@3/3.4.5_2/include",
+					/usr/local/include,
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Bundles";
-				LIBRARY_SEARCH_PATHS = "/usr/local/Cellar/opencv@3/3.4.5_2/include";
+				LIBRARY_SEARCH_PATHS = (
+					"/usr/local/Cellar/opencv@3/3.4.5_2/include",
+					/usr/local/Cellar/glew/2.1.0/lib,
+					/usr/local/Cellar/glfw/3.3/lib,
+				);
 				OTHER_LDFLAGS = (
 					"-I/usr/local/Cellar/opencv@3/3.4.5_2/include/opencv",
 					"-I/usr/local/Cellar/opencv@3/3.4.5_2/include",
@@ -531,6 +526,11 @@
 				HEADER_SEARCH_PATHS = ../;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/Cellar/glew/2.1.0/lib,
+					/usr/local/Cellar/glfw/3.3/lib,
+				);
 				"OTHER_LDFLAGS[arch=*]" = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.imagine.imagineARPlugin;
 				PRODUCT_NAME = imagineARPlugin;
@@ -612,11 +612,14 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					../,
+					/usr/local/include,
 					"/usr/local/Cellar/opencv@3/3.4.5_2/include",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					../,
 					"/usr/local/Cellar/opencv@3/3.4.5_2/lib",
+					/usr/local/Cellar/glfw/3.3/lib,
+					/usr/local/Cellar/glew/2.1.0/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -718,6 +721,11 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = ../;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/Cellar/glfw/3.3/lib,
+					/usr/local/Cellar/glew/2.1.0/lib,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
