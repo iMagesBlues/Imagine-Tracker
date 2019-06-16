@@ -27,7 +27,7 @@ public class imagineARController : MonoBehaviour
 	private static extern void DebugShowTexture();
 
 	[DllImport("imagineARPlugin")]
-	private static extern IntPtr GetRenderEventFunc();
+    private static extern IntPtr GetRenderEventFunc(double dT);
 
 	[DllImport("imagineARPlugin")]
 	private static extern int BuildImageTargetDatabase (Color32[] img, int width, int height, string imgName);
@@ -107,20 +107,20 @@ public class imagineARController : MonoBehaviour
 
 	void Update(){
 		if (updatePlugin) {
-			GL.IssuePluginEvent (GetRenderEventFunc (), 1);
+            GL.IssuePluginEvent (GetRenderEventFunc (Time.deltaTime), 1);
 			if(debugImage)
 				DebugShowTexture ();
 		}
 	}
 
-	IEnumerator UpdateRoutine(){
+	/*IEnumerator UpdateRoutine(){
 		while (true) {
 			yield return new WaitForEndOfFrame ();
 			GL.IssuePluginEvent (GetRenderEventFunc (), 1);
 				if(debugImage)
 					DebugShowTexture ();
 		}
-	}
+	}*/
 		
 	void OnDisable(){
         Debug.Log("Closing Webcam...");

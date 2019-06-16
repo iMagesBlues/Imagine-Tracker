@@ -62,6 +62,7 @@ struct TrackingInfo
     cv::Mat                   kf_rvec = Mat_<float>(3,1);
     Transformation            kf_pose3d;
     float                     steadystate = 0;
+    float                     kf_lostTime = 0.25f;
     
     cv::Mat                   finalHomography;
     Transformation            finalPose3D;
@@ -73,7 +74,11 @@ struct TrackingInfo
     void showAxes(CameraCalibration calib, Transformation tMat, Mat& img);
     void initKalman(const ImageTarget& imageTarget, const CameraCalibration& calibration);
     void updateKalman();
+    void updateKalman(const double dT);
+
     void predictKalman();
+    void predictKalman(const double dT);
+
     void correctKalman();
     void resetKalman();
     void drawKalmanOutline(cv::Mat& img);

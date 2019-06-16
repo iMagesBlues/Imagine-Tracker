@@ -7,7 +7,8 @@
 #include <math.h>
 #include <vector>
 
-#include "glew.h"
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
 #include <opencv2/opencv.hpp>
 #include "DebugCPP.hpp"
 #include "ImageTarget.hpp"
@@ -33,6 +34,7 @@ static CameraCalibration cameraCalibration;
 
 static ImageTarget imageTarget;
 static Tracker tracker;
+static double deltaTime;
 static bool foundInLastFrame = false;
 static bool found = false;
 
@@ -44,9 +46,43 @@ struct Color32
     uchar a;
 };
 
+//GL
+//static void InitGL(){ // we use openGL to quickly convert opencvMat to openGL textures much faster
+//    GLFWwindow *window;
+//    //initialize library
+//    if(!glfwInit())
+//    {
+//        glfwTerminate();
+//    }
+//    //Create windowed mode and OpenGL Context
+//    window = glfwCreateWindow(400, 225, "GL Window", NULL, NULL);
+//
+//
+//    if(!window){
+//        glfwTerminate();
+//        return  -1;
+//    }
+//    //make window context current
+//    glfwMakeContextCurrent(window);
+//
+//    GLuint PixelFormat;
+//    static PIXELFORMATDESCRIPTOR pfd;
+//    hDC = GetDC(NULL);
+//    PixelFormat = ChoosePixelFormat(hDC, &pfd);
+//    SetPixelFormat(hDC, PixelFormat, &pfd);
+//    hRC = wglCreateContext(hDC);
+//    wglMakeCurrent(hDC, hRC);
+//}
+//static void TerminateGL(){
+//    //glfwTerminate();
+//}
+
+
 // ------------ WEBCAM FUNCTIONS ----------------
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API OpenWebcam(int* w, int* h)
 {
+    //InitGL();
+    
     cap.open(0);
     if(!cap.isOpened()){
         std::stringstream ss;
@@ -77,6 +113,9 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API CloseWebcam()
 {
     cap.release();
     Debug::Log("Video capture released");
+    
+    //TerminateGL();
+    
     return;
 }
 //--------------------------------------------------
@@ -277,6 +316,46 @@ static void UNITY_INTERFACE_API OnGraphicsDeviceEvent(UnityGfxDeviceEventType ev
 // be the integer passed to IssuePluginEvent. In this example, we just ignore
 // that value.
 
+
+static GLuint MatToTex(cv::Mat& image)
+{
+    GLuint tex = NULL;
+    
+    glGenFramebuffers(1, &tex);
+    glBindFramebuffer(GL_TEXTURE_2D, tex);
+
+    
+    if(image.empty()){
+        std::cout << "image empty" << std::endl;
+    }else{
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        
+        // Set texture clamping method
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        
+        cv::cvtColor(image, image, CV_RGB2BGR);
+        
+        glTexImage2D(GL_TEXTURE_2D,         // Type of texture
+                     0,                   // Pyramid level (for mip-mapping) - 0 is the top level
+                     GL_RGB,              // Internal colour format to convert to
+                     image.cols,          // Image width
+                     image.rows,          // Image height
+                     0,                   // Border width in pixels (can either be 1 or 0)
+                     GL_RGB,              // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
+                     GL_UNSIGNED_BYTE,    // Image data type
+                     image.ptr());        // The actual image data itself
+    }
+    
+    return tex;
+}
+
+
 static void RenderWebcamTexture()
 {
     Debug::Log("Modify Texture Pixels");
@@ -298,9 +377,9 @@ static void RenderWebcamTexture()
         return;
     }
     
-    cap >> webcamImage;
+    //cap >> webcamImage;
 
-    unsigned char* dst = (unsigned char*)textureDataPtr;
+    /*unsigned char* dst = (unsigned char*)textureDataPtr;
     for(int y = 0; y < webcamImage.rows; y++)
     {
         unsigned char* ptr = dst;
@@ -316,10 +395,13 @@ static void RenderWebcamTexture()
             ptr += 4;
         }
         dst += textureRowPitch;
-    }
+    }*/
+    textureDataPtr = webcamImage.data;
     
    s_CurrentAPI->EndModifyTexture(textureHandle, width, height, textureRowPitch, textureDataPtr);
 }
+
+
 
 
 static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
@@ -329,10 +411,9 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 	// Unknown / unsupported graphics device type? Do nothing
 	if (s_CurrentAPI == NULL)
 		return;
-    
-	//RenderWebcamTexture();
-    
     cap >> webcamImage;
+
+    
     
     //process frame
     ARUtils::Resize(webcamImage, gray);
@@ -365,7 +446,7 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
         tracker.m_trackingInfo.computeRawPose(imageTarget, cameraCalibration);
     }
     
-    tracker.m_trackingInfo.updateKalman();
+    tracker.m_trackingInfo.updateKalman(deltaTime);
     
     if(found){
         if (imageTargetTracked != nullptr){
@@ -374,6 +455,9 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
     }
 
     foundInLastFrame = found;
+    
+    RenderWebcamTexture();
+
 
 }
 
@@ -381,8 +465,9 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 // --------------------------------------------------------------------------
 // GetRenderEventFunc, an example function we export which is used to get a rendering event callback function.
 
-extern "C" UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRenderEventFunc()
+extern "C" UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRenderEventFunc(double dT)
 {
+    deltaTime = dT;
 	return OnRenderEvent;
 }
 
